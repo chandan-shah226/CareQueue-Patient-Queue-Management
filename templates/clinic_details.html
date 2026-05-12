@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Clinic Details</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/clinic_details.css') }}">
+</head>
+
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        <a href="/select_clinic" class="back">&#8592;</a>
+        <h1>Clinic Details</h1>
+        <p>Review clinic information</p>
+    </div>
+
+    <!-- Card -->
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <h2 id="clinicName"></h2>
+                <p class="doctor" id="doctorName"></p>
+            </div>
+            <button class="open-btn" id="statusBtn"></button>
+        </div>
+
+        <div class="info">
+            <div class="row">
+                <span class="label">OPD Timing</span>
+                <span class="value" id="opdTime"></span>
+            </div>
+
+            <div class="row">
+                <span class="label">Address</span>
+                <span class="value" id="address"></span>
+            </div>
+
+            <div class="row">
+                <span class="label">Current Token (Serving)</span>
+                <span class="value big" id="currentToken"></span>
+            </div>
+
+            <div class="row">
+                <span class="label">Patients Waiting</span>
+                <span class="value" id="waitingCount"></span>
+            </div>
+            
+            <div class="row">
+                <span class="label">Estimated Wait Time</span>
+                <span class="value" id="expectedTime" style="color: #2b6cb0; font-weight: bold;"></span>
+            </div>
+
+            <div class="highlight">
+                Your Token Will Be <strong id="yourToken"></strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <button class="join-btn" id="joinBtn">Join Queue</button>
+    </div>
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async function () {
+            // Get Clinic ID from URL
+            const params = new URLSearchParams(window.location.search);
+            let clinicId = params.get("id");
+
+            // Default to 1 if no ID provided
+            if (!clinicId) {
+                clinicId = 1;
+            }
+
+            try {
+                // Fetch clinic data from backend
+                const response = await fetch(`/api/clinic/${clinicId}`);
+
+                if (!response.ok) {
+                    throw new Error('Clinic not found');
+                }
+
+                const clinic = await response.json();
+                const doctor = clinic.doctors[0]; // Assuming 1 doctor per clinic for now
+
+                // Update UI
+                document.getElementById("clinicName").innerText = clinic.name;
+                document.getElementById("doctorName").innerText = doctor.name;
+                document.getElementById("opdTime").innerText = `${doctor.opd_start_time} - ${doctor.opd_end_time}`;
+                document.getElementById("address").innerText = clinic.location;
+                document.getElementById("currentToken").innerText = doctor.current_token;
+                document.getElementById("waitingCount").innerText = doctor.waiting_count;
+                
+                // Calculate Expected Time
+                const expectedWaitMinutes = Math.round(doctor.waiting_count * doctor.average_consultation_time);
+                if (expectedWaitMinutes > 0) {
+                    document.getElementById("expectedTime").innerText = `~${expectedWaitMinutes} mins`;
+                } else if (doctor.status === "Closed" || doctor.status === "Break") {
+                    document.getElementById("expectedTime").innerText = "NA";
+                } else {
+                    document.getElementById("expectedTime").innerText = "No wait time!";
+                }
+
+                // Calculate "Your Token" (Next available)
+                // Since we don't have this in the API yet, we can estimate it or just hide it
+                // For now, let's say it's current + waiting + 1? Or just hide it if not returned.
+                // The previous code had a hardcoded value. Let's calculate it if possible or show logic.
+                // Actually, the backend doesn't trigger "your token" until you register.
+                // So we can show "Next: #" or remove it?
+                // Let's keep it simple: "Next Available"
+                // If current is NA, next is 1. If current is 5, waiting is 3, next is 5+3+1 = 9.
+                let nextToken = 1;
+                if (doctor.current_token !== "NA") {
+                    const currentNum = parseInt(doctor.current_token.replace("#", ""));
+                    nextToken = currentNum + doctor.waiting_count + 1;
+                } else {
+                    // If no current token, but waiting count > 0?
+                    // Actually if current is NA, it means queue is empty or not started?
+                    // If waiting > 0 but current NA, next is waiting + 1?
+                    // Let's just say "Calculated on Join" to avoid confusion, or use a heuristic.
+                    nextToken = (doctor.waiting_count || 0) + 1;
+                }
+                document.getElementById("yourToken").innerText = "#" + nextToken;
+
+                // Use status from backend
+                const statusBtn = document.getElementById("statusBtn");
+                const doctorStatus = doctor.status || "Closed";
+                
+                let displayStatus = doctorStatus;
+                if (doctorStatus === "Open") {
+                    const now = new Date();
+                    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+                    const [h, m] = doctor.opd_start_time.split(':').map(Number);
+                    const opdStartMinutes = h * 60 + m;
+                    
+                    if (currentMinutes < opdStartMinutes) {
+                        displayStatus = "Open (Early)";
+                    }
+                }
+                
+                statusBtn.innerText = displayStatus;
+
+                if (doctorStatus === "Open") {
+                    statusBtn.className = "open-btn";
+                    statusBtn.style.background = "#e6fffa";
+                    statusBtn.style.color = "#2c7a7b";
+                } else if (doctorStatus === "Break") {
+                    statusBtn.className = "open-btn";
+                    statusBtn.style.background = "#fff3e0";
+                    statusBtn.style.color = "#e08d2f";
+                } else {
+                    statusBtn.className = "open-btn";
+                    statusBtn.style.background = "#ffeaea";
+                    statusBtn.style.color = "#c0392b";
+                }
+
+                // Join Button — generate a real token then navigate
+                document.getElementById("joinBtn").addEventListener("click", async function () {
+                    const joinBtn = document.getElementById("joinBtn");
+                    joinBtn.disabled = true;
+                    joinBtn.textContent = "Joining...";
+
+                    const patientId = localStorage.getItem("patientId");
+
+                    if (!patientId) {
+                        // Patient not registered yet — redirect to login
+                        alert("Please log in first to join the queue.");
+                        window.location.href = "/patient_login";
+                        return;
+                    }
+
+                    try {
+                        const tokenRes = await fetch("/api/generate_token", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ patient_id: parseInt(patientId), doctor_id: doctor.id })
+                        });
+
+                        if (!tokenRes.ok) {
+                            const err = await tokenRes.json();
+                            throw new Error(err.error || "Token generation failed");
+                        }
+
+                        const tokenData = await tokenRes.json();
+                        const tokenNumber = tokenData.token && tokenData.token.token_number;
+
+                        window.location.href =
+                            `/queue_status?id=${clinic.id}&doctor_id=${doctor.id}&token=${tokenNumber}`;
+
+                    } catch (err) {
+                        console.error("Token generation error:", err);
+                        alert("Could not join queue: " + err.message);
+                        joinBtn.disabled = false;
+                        joinBtn.textContent = "Join Queue";
+                    }
+                });
+
+            } catch (error) {
+                console.error("Error loading clinic details:", error);
+                document.getElementById("clinicName").innerText = "Error loading clinic";
+                document.getElementById("joinBtn").disabled = true;
+            }
+        });
+    </script>
+
+</body>
+
+</html>

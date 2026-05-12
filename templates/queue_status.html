@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Queue Status – CareQueue</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/queue_status.css') }}">
+</head>
+
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="header-inner">
+            <a href="/select_clinic" class="back-btn">&#8592;</a>
+            <div>
+                <h2>Queue Status</h2>
+                <p id="clinicInfo">Loading clinic info...</p>
+            </div>
+            <div class="live-badge" id="liveBadge">
+                <span class="pulse-dot"></span> LIVE
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Banner -->
+    <div class="status-banner" id="statusBanner">
+        ⏳ Waiting for your turn...
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="loader-wrap" id="loaderWrap">
+        <div class="spinner"></div>
+        <p>Fetching queue status...</p>
+    </div>
+
+    <!-- Token Card -->
+    <div class="token-card" id="tokenCard" style="display:none">
+        <div class="token-header">
+            <p class="token-label">Your Token Number</p>
+            <h1 id="yourToken" class="token-num">—</h1>
+            <p class="token-sub" id="tokenSub">Joined the queue</p>
+        </div>
+
+        <div class="token-body">
+            <div class="info-row">
+                <div class="icon-dot blue"></div>
+                <div class="info-text">
+                    <p class="label">Now Serving</p>
+                    <p class="value" id="currentToken">—</p>
+                </div>
+            </div>
+
+            <div class="info-row">
+                <div class="icon-dot green"></div>
+                <div class="info-text">
+                    <p class="label">Patients Ahead of You</p>
+                    <p class="value" id="patientsAhead">—</p>
+                </div>
+            </div>
+
+            <div class="info-row">
+                <div class="icon-dot orange"></div>
+                <div class="info-text">
+                    <p class="label">Estimated Wait</p>
+                    <p class="value" id="estimatedWait">—</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="last-updated" id="lastUpdated">Last updated: —</div>
+    </div>
+
+    <!-- Manual Refresh -->
+    <button class="refresh-box" id="refreshBtn">🔄 Refresh Now</button>
+
+    <!-- Note -->
+    <div class="note-box">
+        <strong>📢 Note:</strong> Please be ready and nearby when your turn is approaching. The doctor will call your
+        token number.
+    </div>
+
+    <!-- Auto-refresh countdown -->
+    <div class="auto-refresh-info" id="autoRefreshInfo">Auto-refreshes in <span id="countdown">10</span>s</div>
+
+    <!-- COMPLETION POPUP -->
+    <div class="completion-overlay" id="completionPopup">
+        <div class="completion-box">
+            <div class="check-circle">✓</div>
+            <h2>Token Served!</h2>
+            <p>Your consultation has been completed. Thank you for using CareQueue.</p>
+
+            <div class="completion-details">
+                <div class="detail-row">
+                    <span>Clinic</span>
+                    <span id="completeClinic">—</span>
+                </div>
+                <div class="detail-row">
+                    <span>Doctor</span>
+                    <span id="completeDoctor">—</span>
+                </div>
+                <div class="detail-row">
+                    <span>Token</span>
+                    <span id="completeToken">—</span>
+                </div>
+            </div>
+
+            <div class="status-badge">✅ Status: Completed</div>
+            <button class="exit-btn" onclick="exitQueue()">Exit Queue</button>
+        </div>
+    </div>
+
+    <!-- ERROR STATE -->
+    <div class="error-box" id="errorBox" style="display:none">
+        <p>⚠️ Could not connect to the server. Make sure the backend is running.</p>
+        <button class="refresh-box" onclick="fetchQueueStatus()">Try Again</button>
+    </div>
+
+    <script>
+        // Use relative URLs for multi-device support
+        const params = new URLSearchParams(window.location.search);
+        const clinicId = params.get('id') || '1';
+        const doctorId = params.get('doctor_id') || '1';
+        const myToken = params.get('token') || null;
+
+        let clinicName = '';
+        let doctorName = '';
+        let isCompleted = false;
+        let countdownVal = 10;
+        let autoTimer, countdownTimer;
+
+        // ── DOM refs ──────────────────────────────────────────────────────────────
+        const loaderWrap = document.getElementById('loaderWrap');
+        const tokenCard = document.getElementById('tokenCard');
+        const statusBanner = document.getElementById('statusBanner');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const errorBox = document.getElementById('errorBox');
+        const completionPopup = document.getElementById('completionPopup');
+
+        // ── Fetch clinic info (name / doctor name) once ───────────────────────────
+        async function fetchClinicInfo() {
+            try {
+                const res = await fetch(`/api/clinic/${clinicId}`);
+                const data = await res.json();
+                clinicName = data.name || 'Clinic';
+                const doc = data.doctors && data.doctors[0];
+                doctorName = doc ? doc.name : 'Doctor';
+                document.getElementById('clinicInfo').innerText = `${clinicName}  ·  ${doctorName}`;
+            } catch (e) {
+                document.getElementById('clinicInfo').innerText = 'Clinic info unavailable';
+            }
+        }
+
+        // ── Fetch live queue status from backend ──────────────────────────────────
+        async function fetchQueueStatus() {
+            errorBox.style.display = 'none';
+            if (isCompleted) return;
+
+            try {
+                const res = await fetch(`/api/current_token/${doctorId}`);
+                if (!res.ok) throw new Error('API error');
+                const data = await res.json();
+
+                // data = { doctor_id, current_token_number, waiting_count, status, average_consultation_time }
+                const serving = data.current_token_number || 0;
+                const waitingCount = data.waiting_count || 0;
+                const avgTime = data.average_consultation_time || 5;
+                const doctorStatus = data.status || 'Closed';
+
+                // Compute patients ahead if we know our token
+                let ahead = '—';
+                if (myToken !== null) {
+                    const myNum = parseInt(myToken);
+                    if (serving > 0 && myNum <= serving) {
+                        ahead = 0;
+                    } else if (serving > 0) {
+                        ahead = Math.max(0, myNum - serving - 1);
+                    } else {
+                        // Queue hasn't started, count based on position
+                        ahead = Math.max(0, waitingCount - 1);
+                    }
+                } else {
+                    ahead = waitingCount;
+                }
+
+                // Estimated wait using real average consultation time from backend
+                const estimatedMin = (typeof ahead === 'number') ? Math.round(ahead * avgTime) : null;
+
+                // ── Update UI ──────
+                loaderWrap.style.display = 'none';
+                tokenCard.style.display = 'block';
+                refreshBtn.style.display = 'block';
+
+                document.getElementById('yourToken').innerText =
+                    myToken !== null ? '#' + myToken : '(preview)';
+
+                document.getElementById('currentToken').innerText =
+                    serving > 0 ? '#' + serving : 'Not started';
+
+                document.getElementById('patientsAhead').innerText =
+                    (typeof ahead === 'number') ? ahead : ahead;
+
+                document.getElementById('estimatedWait').innerText =
+                    (estimatedMin !== null && estimatedMin > 0)
+                        ? '~' + estimatedMin + ' min'
+                        : (estimatedMin === 0 ? '🟢 Almost now!' : '—');
+
+                const now = new Date();
+                document.getElementById('lastUpdated').innerText =
+                    'Last updated: ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+                // ── Check if it's our turn / done ──
+                if (myToken !== null && serving > 0) {
+                    const myNum = parseInt(myToken);
+                    if (serving >= myNum) {
+                        statusBanner.innerText = "✅ It's Your Turn! Please proceed to the doctor.";
+                        statusBanner.className = 'status-banner your-turn';
+                        stopAutoRefresh();
+                        setTimeout(showCompletion, 2000);
+                        return;
+                    }
+                }
+
+                // Show clinic status
+                if (doctorStatus !== 'Open') {
+                    statusBanner.innerText = `⚠️ Clinic is ${doctorStatus}. Queue is paused.`;
+                    statusBanner.className = 'status-banner almost';
+                } else if (typeof ahead === 'number' && ahead <= 1 && myToken !== null) {
+                    statusBanner.innerText = '⚡ You are next! Please be ready.';
+                    statusBanner.className = 'status-banner almost';
+                } else {
+                    statusBanner.innerText = '⏳ WAITING FOR YOUR TURN...';
+                    statusBanner.className = 'status-banner waiting';
+                }
+
+            } catch (err) {
+                console.error('Queue fetch error:', err);
+                loaderWrap.style.display = 'none';
+                if (tokenCard.style.display === 'none') {
+                    errorBox.style.display = 'block';
+                }
+            }
+        }
+
+        // ── Completion popup ──────────────────────────────────────────────────────
+        function showCompletion() {
+            isCompleted = true;
+            stopAutoRefresh();
+            document.getElementById('completeClinic').innerText = clinicName;
+            document.getElementById('completeDoctor').innerText = doctorName;
+            document.getElementById('completeToken').innerText = myToken ? '#' + myToken : '—';
+            completionPopup.style.display = 'flex';
+        }
+
+        function exitQueue() {
+            window.location.href = '/select_clinic';
+        }
+
+        // ── Auto-refresh logic (polls backend, no fake queue movement) ────────────
+        function startAutoRefresh() {
+            stopAutoRefresh();
+            countdownVal = 10;
+            document.getElementById('countdown').innerText = countdownVal;
+
+            countdownTimer = setInterval(() => {
+                countdownVal--;
+                document.getElementById('countdown').innerText = countdownVal;
+                if (countdownVal <= 0) {
+                    countdownVal = 10;
+                }
+            }, 1000);
+
+            autoTimer = setInterval(() => {
+                fetchQueueStatus();
+                countdownVal = 10;
+            }, 10000);
+        }
+
+        function stopAutoRefresh() {
+            clearInterval(autoTimer);
+            clearInterval(countdownTimer);
+            document.getElementById('autoRefreshInfo').style.display = 'none';
+        }
+
+        // ── Manual refresh ────────────────────────────────────────────────────────
+        refreshBtn.addEventListener('click', () => {
+            fetchQueueStatus();
+            countdownVal = 10;
+            document.getElementById('countdown').innerText = countdownVal;
+        });
+
+        // ── Init ──────────────────────────────────────────────────────────────────
+        (async function init() {
+            await fetchClinicInfo();
+            await fetchQueueStatus();
+            startAutoRefresh();
+        })();
+    </script>
+
+</body>
+
+</html>

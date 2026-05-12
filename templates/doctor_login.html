@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Login - CareQueue</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style_login.css') }}">
+    <style>
+        .brand-panel {
+            background: linear-gradient(145deg, hsl(140, 60%, 45%), hsl(140, 70%, 35%), hsl(140, 80%, 25%));
+        }
+        .btn--primary {
+            background: linear-gradient(135deg, hsl(140, 60%, 45%), hsl(140, 70%, 35%));
+            box-shadow: 0 4px 14px hsl(140, 60%, 45%, 0.35);
+        }
+        .btn--primary:hover:not(:disabled) {
+            background: linear-gradient(135deg, hsl(140, 60%, 40%), hsl(140, 70%, 30%));
+            box-shadow: 0 6px 18px hsl(140, 60%, 45%, 0.45);
+        }
+        .input-icon svg { stroke: #94a3b8; }
+        .input-wrap input:focus { border-color: hsl(140, 60%, 45%); box-shadow: 0 0 0 3px hsl(140, 60%, 45%, 0.15); }
+    </style>
+</head>
+
+<body>
+    <div class="page-wrapper">
+        <!-- Left decorative panel -->
+        <div class="brand-panel" aria-hidden="true">
+            <div class="brand-panel__inner">
+                <div class="brand-logo">
+                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                        <rect width="40" height="40" rx="10" fill="rgba(255,255,255,0.15)"/>
+                        <path d="M20 8v24M8 20h24" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+                    </svg>
+                    <span>CareQueue Doctor</span>
+                </div>
+                <h2 class="brand-tagline">Manage your practice.<br>Effortlessly.</h2>
+                <ul class="brand-features">
+                    <li>
+                        <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="rgba(255,255,255,0.2)"/><path d="M7 12l3.5 3.5L17 8" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        Digital Queue Management
+                    </li>
+                    <li>
+                        <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="rgba(255,255,255,0.2)"/><path d="M7 12l3.5 3.5L17 8" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        Automated Patient Tracking
+                    </li>
+                    <li>
+                        <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="rgba(255,255,255,0.2)"/><path d="M7 12l3.5 3.5L17 8" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        Streamlined Consultations
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Right form panel -->
+        <div class="form-panel">
+            <div class="form-card">
+                <!-- Mobile logo -->
+                <div class="mobile-logo" aria-hidden="true" style="color: hsl(140, 60%, 40%);">
+                    <svg width="32" height="32" viewBox="0 0 40 40" fill="none">
+                        <rect width="40" height="40" rx="10" fill="hsl(140, 60%, 45%)"/>
+                        <path d="M20 8v24M8 20h24" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+                    </svg>
+                    <span>CareQueue Doctor</span>
+                </div>
+
+                <!-- Step 1: Licence Number -->
+                <div id="step-licence" class="step active">
+                    <div class="step-header">
+                        <h1>Doctor Login</h1>
+                        <p class="step-sub">Enter your medical licence number.</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="licence">Licence Number</label>
+                        <div class="input-wrap">
+                            <span class="input-icon">
+                                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke-width="2">
+                                    <rect x="3" y="4" width="18" height="16" rx="2" ry="2"></rect>
+                                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                                </svg>
+                            </span>
+                            <input
+                                type="text"
+                                id="licence"
+                                placeholder="e.g. GJ1234"
+                                maxlength="6"
+                                style="text-transform: uppercase;"
+                            >
+                        </div>
+                        <p class="field-hint">Format: 2 letters followed by 4 digits (e.g., GJ1234)</p>
+                    </div>
+
+                    <div id="msgLicence" class="message" role="alert" aria-live="polite"></div>
+
+                    <button id="btnContinue" class="btn btn--primary">
+                        Continue
+                        <svg class="btn-arrow" width="16" height="16" fill="none" viewBox="0 0 24 24">
+                            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+
+                    <div id="registerPrompt" style="display:none; text-align:center; font-size: 0.9rem; margin-top:20px;">
+                        Not registered? <a href="#" onclick="goRegister()" style="color:hsl(140, 60%, 45%); font-weight:600; text-decoration:none;">Create an account</a>
+                    </div>
+                </div>
+
+                <!-- Step 2: Login PIN -->
+                <div id="step-login" class="step">
+                    <button class="btn-back" id="btnBackFromLogin" aria-label="Go back">
+                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
+                            <path d="M19 12H5M11 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Back
+                    </button>
+                    <div class="step-header">
+                        <h1>Welcome back<span id="doctorGreeting"></span></h1>
+                        <p class="step-sub">Enter your 4-digit PIN to log in.</p>
+                    </div>
+
+                    <div class="phone-badge-wrap">
+                        <span id="loginLicenceDisplay" class="phone-badge" style="background: hsl(140, 60%, 95%); color: hsl(140, 60%, 40%); border-color: hsl(140, 60%, 85%);"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label>4-Digit PIN</label>
+                        <div class="pin-row" id="loginPinRow">
+                            <input type="password" class="pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                            <input type="password" class="pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                            <input type="password" class="pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                            <input type="password" class="pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                        </div>
+                    </div>
+
+                    <div id="loginRetryInfo" class="retry-info" style="display:none;"></div>
+
+                    <button id="btnLogin" class="btn btn--primary" disabled>
+                        Login
+                        <svg class="btn-arrow" width="16" height="16" fill="none" viewBox="0 0 24 24">
+                            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+
+                    <div id="msgLogin" class="message" role="alert" aria-live="polite"></div>
+                </div>
+
+                <!-- Step 3: Set PIN (Legacy Doctor) -->
+                <div id="step-set-pin" class="step">
+                    <button class="btn-back" id="btnBackFromSetPin" aria-label="Go back">
+                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
+                            <path d="M19 12H5M11 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Back
+                    </button>
+                    <div class="step-header">
+                        <h1>Set Your PIN<span id="setPinGreeting"></span></h1>
+                        <p class="step-sub">Your account doesn't have a PIN yet. Create one now.</p>
+                    </div>
+
+                    <div class="phone-badge-wrap">
+                        <span id="setPinLicenceDisplay" class="phone-badge" style="background: hsl(140, 60%, 95%); color: hsl(140, 60%, 40%); border-color: hsl(140, 60%, 85%);"></span>
+                    </div>
+
+                    <div class="info-banner" style="background: hsl(140, 60%, 95%); color: hsl(140, 60%, 35%); border-color: hsl(140, 60%, 85%);">
+                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" style="stroke: hsl(140, 60%, 45%);">
+                            <circle cx="12" cy="12" r="10" stroke-width="1.8"/>
+                            <path d="M12 8v4M12 16h.01" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        You only need to do this once. Your PIN will be saved securely.
+                    </div>
+
+                    <div class="form-group">
+                        <label>Create a 4-Digit PIN</label>
+                        <div class="pin-row" id="setPinRow">
+                            <input type="password" class="pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                            <input type="password" class="pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                            <input type="password" class="pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                            <input type="password" class="pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Confirm PIN</label>
+                        <div class="pin-row" id="confirmPinRow">
+                            <input type="password" class="pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                            <input type="password" class="pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                            <input type="password" class="pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                            <input type="password" class="pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                        </div>
+                    </div>
+
+                    <button id="btnSetPin" class="btn btn--primary" disabled>
+                        Save PIN & Login
+                        <svg class="btn-arrow" width="16" height="16" fill="none" viewBox="0 0 24 24">
+                            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+
+                    <div id="msgSetPin" class="message" role="alert" aria-live="polite"></div>
+                </div>
+
+                <footer class="card-footer">
+                    © CareQueue 2026 &nbsp;·&nbsp; All Rights Reserved
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <!-- API integration library -->
+    <script src="{{ url_for('static', filename='js/api_integration.js') }}"></script>
+
+    <script>
+        const API = '/api';
+
+        // DOM elements
+        const stepLicence = document.getElementById('step-licence');
+        const stepLogin   = document.getElementById('step-login');
+        const stepSetPin  = document.getElementById('step-set-pin');
+
+        const licenceInput = document.getElementById('licence');
+        const btnContinue  = document.getElementById('btnContinue');
+        const msgLicence   = document.getElementById('msgLicence');
+        const registerPrompt = document.getElementById('registerPrompt');
+
+        const loginPinBoxes = Array.from(document.querySelectorAll('#loginPinRow .pin-box'));
+        const btnLogin = document.getElementById('btnLogin');
+        const msgLogin = document.getElementById('msgLogin');
+        
+        const setPinBoxes = Array.from(document.querySelectorAll('#setPinRow .pin-box'));
+        const confirmPinBoxes = Array.from(document.querySelectorAll('#confirmPinRow .pin-box'));
+        const btnSetPin = document.getElementById('btnSetPin');
+        const msgSetPin = document.getElementById('msgSetPin');
+
+        let failedAttempts = 0;
+        const MAX_CLIENT_ATTEMPTS = 5;
+
+        function showStep(step) {
+            [stepLicence, stepLogin, stepSetPin].forEach(s => s.classList.remove('active'));
+            step.classList.add('active');
+        }
+
+        function showMsg(el, text, type = 'error') {
+            el.textContent = text;
+            el.className = `message message--${type}`;
+        }
+        
+        function clearMsg(el) {
+            el.textContent = '';
+            el.className = 'message';
+        }
+
+        function getPinValue(boxes) { return boxes.map(b => b.value).join(''); }
+        function isPinComplete(boxes) { return boxes.every(b => /^\d$/.test(b.value)); }
+        function clearPinBoxes(boxes) { 
+            boxes.forEach(b => b.value = ''); 
+            if (boxes.length) boxes[0].focus();
+        }
+
+        function wirePinBoxes(boxes, onComplete) {
+            boxes.forEach((box, i) => {
+                box.addEventListener('input', () => {
+                    box.value = box.value.replace(/\D/g, '').slice(-1);
+                    if (box.value && i < boxes.length - 1) boxes[i + 1].focus();
+                    onComplete(isPinComplete(boxes));
+                });
+                box.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && !box.value && i > 0) {
+                        boxes[i - 1].focus();
+                        boxes[i - 1].value = '';
+                    }
+                });
+                box.addEventListener('paste', (e) => {
+                    e.preventDefault();
+                    const digits = (e.clipboardData.getData('text') || '').replace(/\D/g, '').slice(0, 4);
+                    digits.split('').forEach((ch, idx) => {
+                        if (boxes[i + idx]) boxes[i + idx].value = ch;
+                    });
+                    const nextEmpty = boxes.indexOf(boxes.find(b => !b.value));
+                    if (nextEmpty >= 0) boxes[nextEmpty].focus();
+                    else boxes[boxes.length - 1].focus();
+                    onComplete(isPinComplete(boxes));
+                });
+            });
+        }
+
+        // LICENCE STEP
+        licenceInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter') btnContinue.click();
+        });
+
+        btnContinue.addEventListener('click', async () => {
+            const licence = licenceInput.value.trim().toUpperCase();
+            const pattern = /^[A-Z]{2}[0-9]{4}$/;
+            
+            clearMsg(msgLicence);
+            registerPrompt.style.display = "none";
+
+            if (!pattern.test(licence)) {
+                showMsg(msgLicence, "Invalid Format. Expected: GJ1234");
+                return;
+            }
+
+            btnContinue.disabled = true;
+            btnContinue.textContent = "Checking...";
+
+            try {
+                const res = await fetch(`${API}/doctor/check`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ licence_number: licence })
+                });
+                const data = await res.json();
+                
+                if (data.exists && data.has_password) {
+                    document.getElementById('loginLicenceDisplay').textContent = licence;
+                    document.getElementById('doctorGreeting').textContent = data.name ? `, Dr. ${data.name.split(' ')[0]}` : '';
+                    clearPinBoxes(loginPinBoxes);
+                    clearMsg(msgLogin);
+                    failedAttempts = 0;
+                    document.getElementById('loginRetryInfo').style.display = 'none';
+                    showStep(stepLogin);
+                    loginPinBoxes[0].focus();
+                } else if (data.exists && !data.has_password) {
+                    document.getElementById('setPinLicenceDisplay').textContent = licence;
+                    document.getElementById('setPinGreeting').textContent = data.name ? `, Dr. ${data.name.split(' ')[0]}` : '';
+                    clearPinBoxes(setPinBoxes);
+                    clearPinBoxes(confirmPinBoxes);
+                    clearMsg(msgSetPin);
+                    btnSetPin.disabled = true;
+                    showStep(stepSetPin);
+                    setPinBoxes[0].focus();
+                } else {
+                    showMsg(msgLicence, "Doctor not found.");
+                    registerPrompt.style.display = "block";
+                }
+            } catch (err) {
+                showMsg(msgLicence, "Network error.");
+            } finally {
+                btnContinue.disabled = false;
+                btnContinue.textContent = "Continue";
+            }
+        });
+
+        // LOGIN STEP
+        wirePinBoxes(loginPinBoxes, complete => { btnLogin.disabled = !complete; });
+        document.getElementById('btnBackFromLogin').addEventListener('click', () => showStep(stepLicence));
+
+        btnLogin.addEventListener('click', async () => {
+            if (failedAttempts >= MAX_CLIENT_ATTEMPTS) {
+                showMsg(msgLogin, 'Too many attempts. Wait 1 minute.', 'error');
+                return;
+            }
+
+            const licence = licenceInput.value.trim().toUpperCase();
+            const pin = getPinValue(loginPinBoxes);
+            clearMsg(msgLogin);
+            btnLogin.disabled = true;
+            btnLogin.textContent = "Verifying...";
+
+            try {
+                const res = await fetch(`${API}/doctor/login`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ licence_number: licence, pin: pin })
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    localStorage.setItem("doctorId", data.doctor.id);
+                    localStorage.setItem("doctorApiKey", data.api_key);
+                    localStorage.setItem("loggedDoctor", licence);
+                    showMsg(msgLogin, "Login successful!", "success");
+                    setTimeout(() => window.location.href = "/doctor_dashboard", 700);
+                } else if (res.status === 401) {
+                    failedAttempts++;
+                    clearPinBoxes(loginPinBoxes);
+                    if (MAX_CLIENT_ATTEMPTS - failedAttempts > 0) {
+                        showMsg(msgLogin, `Incorrect PIN. ${MAX_CLIENT_ATTEMPTS - failedAttempts} tries left.`, "error");
+                    } else {
+                        showMsg(msgLogin, "Locked out.", "error");
+                        const info = document.getElementById('loginRetryInfo');
+                        info.style.display = 'block';
+                        info.textContent = 'Account temporarily locked. Try again in 1 minute.';
+                    }
+                } else if (res.status === 429) {
+                    showMsg(msgLogin, data.message || "Too many attempts.", "error");
+                } else {
+                    showMsg(msgLogin, data.message || "Login failed.", "error");
+                }
+            } catch (err) {
+                showMsg(msgLogin, "Network error.");
+            } finally {
+                if (!msgLogin.classList.contains('message--success')) {
+                    btnLogin.textContent = "Login";
+                    btnLogin.disabled = !isPinComplete(loginPinBoxes);
+                }
+            }
+        });
+
+        // SET PIN STEP
+        function checkSetPinReady() {
+            btnSetPin.disabled = !(isPinComplete(setPinBoxes) && isPinComplete(confirmPinBoxes));
+        }
+        wirePinBoxes(setPinBoxes, checkSetPinReady);
+        wirePinBoxes(confirmPinBoxes, checkSetPinReady);
+        document.getElementById('btnBackFromSetPin').addEventListener('click', () => showStep(stepLicence));
+
+        btnSetPin.addEventListener('click', async () => {
+            const licence = licenceInput.value.trim().toUpperCase();
+            const pin = getPinValue(setPinBoxes);
+            const conf = getPinValue(confirmPinBoxes);
+
+            clearMsg(msgSetPin);
+            if (pin !== conf) {
+                showMsg(msgSetPin, "PINs do not match.", "error");
+                clearPinBoxes(confirmPinBoxes);
+                return;
+            }
+
+            btnSetPin.disabled = true;
+            btnSetPin.textContent = "Saving...";
+
+            try {
+                const res = await fetch(`${API}/doctor/set_pin`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ licence_number: licence, pin: pin })
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    localStorage.setItem("doctorId", data.doctor.id);
+                    localStorage.setItem("doctorApiKey", data.api_key);
+                    localStorage.setItem("loggedDoctor", licence);
+                    showMsg(msgSetPin, "PIN saved! Logging in...", "success");
+                    setTimeout(() => window.location.href = "/doctor_dashboard", 800);
+                } else if (res.status === 409) {
+                    showMsg(msgSetPin, "PIN already set. Please login.", "error");
+                    setTimeout(() => showStep(stepLogin), 1200);
+                } else {
+                    showMsg(msgSetPin, data.message || "Failed to set PIN", "error");
+                }
+            } catch (err) {
+                showMsg(msgSetPin, "Network error.");
+            } finally {
+                if (!msgSetPin.classList.contains('message--success')) {
+                    btnSetPin.textContent = "Save PIN & Login";
+                    checkSetPinReady();
+                }
+            }
+        });
+
+        function goRegister() {
+            const licence = licenceInput.value.trim().toUpperCase();
+            window.location.href = "/doctor_register?licence=" + encodeURIComponent(licence);
+        }
+    </script>
+</body>
+</html>

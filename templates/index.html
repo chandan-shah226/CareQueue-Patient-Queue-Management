@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareQueue – Patient Login</title>
+    <meta name="description" content="Secure patient login for CareQueue – Smart OPD Queue Management System.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style_login.css') }}">
+</head>
+
+<body>
+    <div class="page-wrapper">
+
+        <!-- Left decorative panel (desktop only) -->
+        <div class="brand-panel" aria-hidden="true">
+            <div class="brand-panel__inner">
+                <div class="brand-logo">
+                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                        <rect width="40" height="40" rx="10" fill="rgba(255,255,255,0.15)"/>
+                        <path d="M20 8v24M8 20h24" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+                    </svg>
+                    <span>CareQueue</span>
+                </div>
+                <h2 class="brand-tagline">Skip the wait.<br>Not the care.</h2>
+                <ul class="brand-features">
+                    <li>
+                        <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="rgba(255,255,255,0.2)"/><path d="M7 12l3.5 3.5L17 8" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        Real-time queue tracking
+                    </li>
+                    <li>
+                        <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="rgba(255,255,255,0.2)"/><path d="M7 12l3.5 3.5L17 8" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        Skip physical queues
+                    </li>
+                    <li>
+                        <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="rgba(255,255,255,0.2)"/><path d="M7 12l3.5 3.5L17 8" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        Estimated wait times
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Right form panel -->
+        <div class="form-panel">
+            <div class="form-card">
+
+                <!-- Mobile logo -->
+                <div class="mobile-logo" aria-hidden="true">
+                    <svg width="32" height="32" viewBox="0 0 40 40" fill="none">
+                        <rect width="40" height="40" rx="10" fill="#4f7cf7"/>
+                        <path d="M20 8v24M8 20h24" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+                    </svg>
+                    <span>CareQueue</span>
+                </div>
+
+                <!-- Step 1: Phone number -->
+                <div id="step-phone" class="step active">
+                    <div class="step-header">
+                        <h1>Patient Login</h1>
+                        <p class="step-sub">Enter your registered mobile number to continue.</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Mobile Number</label>
+                        <div class="input-wrap">
+                            <span class="input-icon">
+                                <svg width="18" height="18" fill="none" viewBox="0 0 24 24">
+                                    <path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C9.6 21 3 14.4 3 6c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z" fill="#94a3b8"/>
+                                </svg>
+                            </span>
+                            <input
+                                type="tel"
+                                id="phone"
+                                placeholder="e.g. 9876543210"
+                                maxlength="10"
+                                autocomplete="tel"
+                                inputmode="numeric"
+                                aria-label="Mobile number (10 digits)"
+                            >
+                        </div>
+                        <p class="field-hint">10-digit Indian mobile number</p>
+                    </div>
+
+                    <button id="btnContinue" class="btn btn--primary" disabled>
+                        Continue
+                        <svg class="btn-arrow" width="16" height="16" fill="none" viewBox="0 0 24 24">
+                            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+
+                    <div id="msgPhone" class="message" role="alert" aria-live="polite"></div>
+                </div>
+
+                <!-- Step 2a: Existing patient — Enter PIN -->
+                <div id="step-login" class="step">
+                    <button class="btn-back" id="btnBackFromLogin" aria-label="Go back">
+                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
+                            <path d="M19 12H5M11 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Back
+                    </button>
+                    <div class="step-header">
+                        <h1>Welcome back<span id="patientGreeting"></span>!</h1>
+                        <p class="step-sub">Enter your 4-digit PIN to log in.</p>
+                    </div>
+
+                    <div class="phone-badge-wrap">
+                        <span id="loginPhoneDisplay" class="phone-badge"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="loginPin">4-Digit PIN</label>
+                        <div class="pin-row" id="loginPinRow" role="group" aria-label="4-digit PIN">
+                            <input type="password" class="pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]" aria-label="PIN digit 1">
+                            <input type="password" class="pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]" aria-label="PIN digit 2">
+                            <input type="password" class="pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]" aria-label="PIN digit 3">
+                            <input type="password" class="pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]" aria-label="PIN digit 4">
+                        </div>
+                    </div>
+
+                    <div id="loginRetryInfo" class="retry-info" style="display:none;"></div>
+
+                    <button id="btnLogin" class="btn btn--primary" disabled>
+                        Login
+                        <svg class="btn-arrow" width="16" height="16" fill="none" viewBox="0 0 24 24">
+                            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+
+                    <div id="msgLogin" class="message" role="alert" aria-live="polite"></div>
+                </div>
+
+                <!-- Step 2b: New patient — Register with name + PIN -->
+                <div id="step-register" class="step">
+                    <button class="btn-back" id="btnBackFromRegister" aria-label="Go back">
+                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
+                            <path d="M19 12H5M11 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Back
+                    </button>
+                    <div class="step-header">
+                        <h1>Create Account</h1>
+                        <p class="step-sub">Fill in your details to get started.</p>
+                    </div>
+
+                    <div class="phone-badge-wrap">
+                        <span id="registerPhoneDisplay" class="phone-badge"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="patientName">Full Name</label>
+                        <div class="input-wrap">
+                            <span class="input-icon">
+                                <svg width="18" height="18" fill="none" viewBox="0 0 24 24">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round"/>
+                                    <circle cx="12" cy="7" r="4" stroke="#94a3b8" stroke-width="1.8"/>
+                                </svg>
+                            </span>
+                            <input
+                                type="text"
+                                id="patientName"
+                                placeholder="e.g. Priya Sharma"
+                                autocomplete="name"
+                                aria-label="Full name"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Create 4-Digit PIN</label>
+                        <div class="pin-row" id="registerPinRow" role="group" aria-label="Create 4-digit PIN">
+                            <input type="password" class="pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]" aria-label="PIN digit 1">
+                            <input type="password" class="pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]" aria-label="PIN digit 2">
+                            <input type="password" class="pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]" aria-label="PIN digit 3">
+                            <input type="password" class="pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]" aria-label="PIN digit 4">
+                        </div>
+                        <p class="field-hint">Used to secure your account. Must be exactly 4 numbers.</p>
+                    </div>
+
+                    <button id="btnRegister" class="btn btn--primary" disabled>
+                        Create Account
+                        <svg class="btn-arrow" width="16" height="16" fill="none" viewBox="0 0 24 24">
+                            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+
+                    <div id="msgRegister" class="message" role="alert" aria-live="polite"></div>
+                </div>
+
+                <!-- Step 2c: Existing patient with NO PIN — Set PIN for the first time -->
+                <div id="step-set-pin" class="step">
+                    <button class="btn-back" id="btnBackFromSetPin" aria-label="Go back">
+                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
+                            <path d="M19 12H5M11 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Back
+                    </button>
+
+                    <div class="step-header">
+                        <h1>Set Your PIN<span id="setPinGreeting"></span></h1>
+                        <p class="step-sub">Your account doesn't have a PIN yet. Create one to secure your account.</p>
+                    </div>
+
+                    <div class="phone-badge-wrap">
+                        <span id="setPinPhoneDisplay" class="phone-badge"></span>
+                    </div>
+
+                    <!-- Info banner -->
+                    <div class="info-banner">
+                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.8"/>
+                            <path d="M12 8v4M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        You only need to do this once. Your PIN will be saved securely.
+                    </div>
+
+                    <div class="form-group">
+                        <label>Create a 4-Digit PIN</label>
+                        <div class="pin-row" id="setPinRow" role="group" aria-label="Create your 4-digit PIN">
+                            <input type="password" class="pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]" aria-label="PIN digit 1">
+                            <input type="password" class="pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]" aria-label="PIN digit 2">
+                            <input type="password" class="pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]" aria-label="PIN digit 3">
+                            <input type="password" class="pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]" aria-label="PIN digit 4">
+                        </div>
+                        <p class="field-hint">Must be exactly 4 numbers. No letters or symbols.</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Confirm PIN</label>
+                        <div class="pin-row" id="confirmPinRow" role="group" aria-label="Confirm your 4-digit PIN">
+                            <input type="password" class="pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]" aria-label="Confirm PIN digit 1">
+                            <input type="password" class="pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]" aria-label="Confirm PIN digit 2">
+                            <input type="password" class="pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]" aria-label="Confirm PIN digit 3">
+                            <input type="password" class="pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]" aria-label="Confirm PIN digit 4">
+                        </div>
+                    </div>
+
+                    <button id="btnSetPin" class="btn btn--primary" disabled>
+                        Save PIN &amp; Continue
+                        <svg class="btn-arrow" width="16" height="16" fill="none" viewBox="0 0 24 24">
+                            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+
+                    <div id="msgSetPin" class="message" role="alert" aria-live="polite"></div>
+                </div>
+
+                <!-- Footer -->
+                <footer class="card-footer">
+                    © CareQueue 2026 &nbsp;·&nbsp; All Rights Reserved
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <!-- API integration library -->
+    <script src="{{ url_for('static', filename='js/api_integration.js') }}"></script>
+
+    <script>
+    // ============================================================
+    // CareQueue Patient Login — Multi-step UI Controller
+    // ============================================================
+
+    const API = '/api';
+
+    // ── DOM refs ──────────────────────────────────────────────────
+    const stepPhone    = document.getElementById('step-phone');
+    const stepLogin    = document.getElementById('step-login');
+    const stepRegister = document.getElementById('step-register');
+    const stepSetPin   = document.getElementById('step-set-pin');
+
+    const phoneInput   = document.getElementById('phone');
+    const btnContinue  = document.getElementById('btnContinue');
+    const msgPhone     = document.getElementById('msgPhone');
+
+    const btnBackFromLogin    = document.getElementById('btnBackFromLogin');
+    const loginPhoneDisplay   = document.getElementById('loginPhoneDisplay');
+    const patientGreeting     = document.getElementById('patientGreeting');
+    const loginRetryInfo      = document.getElementById('loginRetryInfo');
+    const btnLogin            = document.getElementById('btnLogin');
+    const msgLogin            = document.getElementById('msgLogin');
+
+    const btnBackFromRegister  = document.getElementById('btnBackFromRegister');
+    const registerPhoneDisplay = document.getElementById('registerPhoneDisplay');
+    const patientNameInput     = document.getElementById('patientName');
+    const btnRegister          = document.getElementById('btnRegister');
+    const msgRegister          = document.getElementById('msgRegister');
+
+    const btnBackFromSetPin  = document.getElementById('btnBackFromSetPin');
+    const setPinPhoneDisplay = document.getElementById('setPinPhoneDisplay');
+    const setPinGreeting     = document.getElementById('setPinGreeting');
+    const btnSetPin          = document.getElementById('btnSetPin');
+    const msgSetPin          = document.getElementById('msgSetPin');
+
+    // PIN box collections
+    const loginPinBoxes    = Array.from(document.querySelectorAll('#loginPinRow .pin-box'));
+    const registerPinBoxes = Array.from(document.querySelectorAll('#registerPinRow .pin-box'));
+    const setPinBoxes      = Array.from(document.querySelectorAll('#setPinRow .pin-box'));
+    const confirmPinBoxes  = Array.from(document.querySelectorAll('#confirmPinRow .pin-box'));
+
+    let failedAttempts = 0;   // client-side counter mirrors server-side
+    const MAX_CLIENT_ATTEMPTS = 5;
+
+    // ── Step navigation ───────────────────────────────────────────
+    function showStep(step) {
+        [stepPhone, stepLogin, stepRegister, stepSetPin].forEach(s => s.classList.remove('active'));
+        step.classList.add('active');
+    }
+
+    // ── Message helpers ───────────────────────────────────────────
+    function showMsg(el, text, type = 'error') {
+        el.textContent = text;
+        el.className = `message message--${type}`;
+    }
+    function clearMsg(el) {
+        el.textContent = '';
+        el.className = 'message';
+    }
+
+    // ── PIN box helpers ───────────────────────────────────────────
+    function getPinValue(boxes) {
+        return boxes.map(b => b.value).join('');
+    }
+    function clearPinBoxes(boxes) {
+        boxes.forEach(b => { b.value = ''; });
+        if (boxes.length) boxes[0].focus();
+    }
+    function isPinComplete(boxes) {
+        return boxes.every(b => /^\d$/.test(b.value));
+    }
+
+    function wirePinBoxes(boxes, onComplete) {
+        boxes.forEach((box, i) => {
+            // Only allow single numeric digit
+            box.addEventListener('input', () => {
+                box.value = box.value.replace(/\D/g, '').slice(-1);
+                if (box.value && i < boxes.length - 1) {
+                    boxes[i + 1].focus();
+                }
+                onComplete(isPinComplete(boxes));
+            });
+            box.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !box.value && i > 0) {
+                    boxes[i - 1].focus();
+                    boxes[i - 1].value = '';
+                }
+            });
+            // Paste support: distribute digits across boxes
+            box.addEventListener('paste', (e) => {
+                e.preventDefault();
+                const digits = (e.clipboardData.getData('text') || '').replace(/\D/g, '').slice(0, 4);
+                digits.split('').forEach((ch, idx) => {
+                    if (boxes[i + idx]) boxes[i + idx].value = ch;
+                });
+                const nextEmpty = boxes.indexOf(boxes.find(b => !b.value));
+                if (nextEmpty >= 0) boxes[nextEmpty].focus();
+                else boxes[boxes.length - 1].focus();
+                onComplete(isPinComplete(boxes));
+            });
+        });
+    }
+
+    // ── Step 1: Phone number ──────────────────────────────────────
+    phoneInput.addEventListener('input', () => {
+        phoneInput.value = phoneInput.value.replace(/\D/g, '').slice(0, 10);
+        const ok = phoneInput.value.length === 10;
+        btnContinue.disabled = !ok;
+        clearMsg(msgPhone);
+    });
+
+    phoneInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !btnContinue.disabled) btnContinue.click();
+    });
+
+    btnContinue.addEventListener('click', async () => {
+        const phone = phoneInput.value;
+        clearMsg(msgPhone);
+        btnContinue.disabled = true;
+        btnContinue.textContent = 'Checking…';
+
+        try {
+            const res = await fetch(`${API}/check_patient`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone_number: phone })
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+                showMsg(msgPhone, data.message || data.error || 'Something went wrong.');
+                return;
+            }
+
+            if (data.exists && data.has_password) {
+                // ✅ Existing patient with PIN → login step
+                loginPhoneDisplay.textContent = phone;
+                patientGreeting.textContent = data.name ? `, ${data.name.split(' ')[0]}` : '';
+                clearPinBoxes(loginPinBoxes);
+                clearMsg(msgLogin);
+                failedAttempts = 0;
+                loginRetryInfo.style.display = 'none';
+                showStep(stepLogin);
+                loginPinBoxes[0].focus();
+
+            } else if (data.exists && !data.has_password) {
+                // ⚠️ Existing patient WITHOUT a PIN (legacy account) → set-pin step
+                setPinPhoneDisplay.textContent = phone;
+                setPinGreeting.textContent = data.name ? `, ${data.name.split(' ')[0]}` : '';
+                clearPinBoxes(setPinBoxes);
+                clearPinBoxes(confirmPinBoxes);
+                clearMsg(msgSetPin);
+                btnSetPin.disabled = true;
+                showStep(stepSetPin);
+                setPinBoxes[0].focus();
+
+            } else {
+                // 🆕 New patient → register step
+                registerPhoneDisplay.textContent = phone;
+                patientNameInput.value = '';
+                clearPinBoxes(registerPinBoxes);
+                clearMsg(msgRegister);
+                btnRegister.disabled = true;
+                showStep(stepRegister);
+                patientNameInput.focus();
+            }
+        } catch (err) {
+            showMsg(msgPhone, 'Network error. Please check your connection.');
+        } finally {
+            btnContinue.textContent = 'Continue';
+            btnContinue.disabled = (phoneInput.value.length !== 10);
+        }
+    });
+
+    // ── Step 2a: Login ────────────────────────────────────────────
+    wirePinBoxes(loginPinBoxes, complete => {
+        btnLogin.disabled = !complete;
+    });
+
+    btnBackFromLogin.addEventListener('click', () => {
+        showStep(stepPhone);
+        clearMsg(msgPhone);
+    });
+
+    btnLogin.addEventListener('click', async () => {
+        if (failedAttempts >= MAX_CLIENT_ATTEMPTS) {
+            showMsg(msgLogin, 'Too many failed attempts. Please wait a moment before retrying.', 'error');
+            return;
+        }
+
+        const phone = phoneInput.value;
+        const pin   = getPinValue(loginPinBoxes);
+        clearMsg(msgLogin);
+        btnLogin.disabled = true;
+        btnLogin.textContent = 'Verifying…';
+
+        try {
+            const res = await fetch(`${API}/login_patient`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone_number: phone, pin })
+            });
+            const data = await res.json();
+
+            if (res.ok) {
+                // ✅ Success
+                localStorage.setItem('patientId',   data.patient.id);
+                localStorage.setItem('phoneNumber', data.patient.phone_number);
+                localStorage.setItem('patientName', data.patient.name);
+                showMsg(msgLogin, 'Login successful! Redirecting…', 'success');
+                setTimeout(() => { window.location.href = '/select_clinic'; }, 700);
+            } else if (res.status === 429) {
+                showMsg(msgLogin, data.message || 'Too many attempts. Wait 1 minute.', 'error');
+            } else if (res.status === 401) {
+                failedAttempts++;
+                const remaining = MAX_CLIENT_ATTEMPTS - failedAttempts;
+                clearPinBoxes(loginPinBoxes);
+                btnLogin.disabled = true;
+                if (remaining > 0) {
+                    showMsg(msgLogin, `Incorrect PIN. ${remaining} attempt${remaining !== 1 ? 's' : ''} remaining.`, 'error');
+                } else {
+                    showMsg(msgLogin, 'Too many incorrect attempts. Please wait before trying again.', 'error');
+                    loginRetryInfo.style.display = 'block';
+                    loginRetryInfo.textContent = 'Account temporarily locked. Try again in 1 minute.';
+                }
+            } else if (res.status === 404) {
+                showMsg(msgLogin, 'Account not found. Please register first.', 'error');
+            } else {
+                showMsg(msgLogin, data.message || data.error || 'Login failed. Please try again.', 'error');
+            }
+        } catch (err) {
+            showMsg(msgLogin, 'Network error. Please check your connection.');
+        } finally {
+            if (!msgLogin.classList.contains('message--success')) {
+                btnLogin.textContent = 'Login';
+                btnLogin.disabled = !isPinComplete(loginPinBoxes);
+            }
+        }
+    });
+
+    // ── Step 2b: Register ─────────────────────────────────────────
+    function checkRegisterReady() {
+        const nameOk = patientNameInput.value.trim().length >= 2;
+        const pinOk  = isPinComplete(registerPinBoxes);
+        btnRegister.disabled = !(nameOk && pinOk);
+    }
+
+    patientNameInput.addEventListener('input', checkRegisterReady);
+    wirePinBoxes(registerPinBoxes, checkRegisterReady);
+
+    btnBackFromRegister.addEventListener('click', () => {
+        showStep(stepPhone);
+        clearMsg(msgPhone);
+    });
+
+    btnRegister.addEventListener('click', async () => {
+        const phone = phoneInput.value;
+        const name  = patientNameInput.value.trim();
+        const pin   = getPinValue(registerPinBoxes);
+
+        clearMsg(msgRegister);
+        btnRegister.disabled = true;
+        btnRegister.textContent = 'Creating account…';
+
+        try {
+            const res = await fetch(`${API}/register_patient`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone_number: phone, name, pin })
+            });
+            const data = await res.json();
+
+            if (res.ok || res.status === 201) {
+                // ✅ Success
+                localStorage.setItem('patientId',   data.patient.id);
+                localStorage.setItem('phoneNumber', data.patient.phone_number);
+                localStorage.setItem('patientName', data.patient.name);
+                showMsg(msgRegister, 'Account created! Redirecting…', 'success');
+                setTimeout(() => { window.location.href = '/select_clinic'; }, 700);
+            } else if (res.status === 409) {
+                showMsg(msgRegister, 'This number is already registered. Please go back and log in.', 'error');
+            } else {
+                showMsg(msgRegister, data.message || data.error || 'Registration failed. Please try again.', 'error');
+            }
+        } catch (err) {
+            showMsg(msgRegister, 'Network error. Please check your connection.');
+        } finally {
+            if (!msgRegister.classList.contains('message--success')) {
+                btnRegister.textContent = 'Create Account';
+                checkRegisterReady();
+            }
+        }
+    });
+
+    // ── Step 2c: Set PIN (existing patient, no password yet) ──────
+    function checkSetPinReady() {
+        const pinFilled  = isPinComplete(setPinBoxes);
+        const confFilled = isPinComplete(confirmPinBoxes);
+        btnSetPin.disabled = !(pinFilled && confFilled);
+    }
+
+    wirePinBoxes(setPinBoxes,     checkSetPinReady);
+    wirePinBoxes(confirmPinBoxes, checkSetPinReady);
+
+    btnBackFromSetPin.addEventListener('click', () => {
+        showStep(stepPhone);
+        clearMsg(msgPhone);
+    });
+
+    btnSetPin.addEventListener('click', async () => {
+        const phone   = phoneInput.value;
+        const pin     = getPinValue(setPinBoxes);
+        const confirm = getPinValue(confirmPinBoxes);
+
+        clearMsg(msgSetPin);
+
+        // ── Client-side PIN match check ─────────────────────────────
+        if (pin !== confirm) {
+            showMsg(msgSetPin, 'PINs do not match. Please re-enter both carefully.', 'error');
+            clearPinBoxes(confirmPinBoxes);
+            return;
+        }
+
+        btnSetPin.disabled = true;
+        btnSetPin.textContent = 'Saving PIN…';
+
+        try {
+            const res = await fetch(`${API}/set_patient_pin`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone_number: phone, pin })
+            });
+            const data = await res.json();
+
+            if (res.ok) {
+                // ✅ PIN set — auto-login, redirect
+                localStorage.setItem('patientId',   data.patient.id);
+                localStorage.setItem('phoneNumber', data.patient.phone_number);
+                localStorage.setItem('patientName', data.patient.name);
+                showMsg(msgSetPin, 'PIN saved! Logging you in…', 'success');
+                setTimeout(() => { window.location.href = '/select_clinic'; }, 800);
+
+            } else if (res.status === 409) {
+                // Already has a PIN — redirect to login
+                showMsg(msgSetPin, 'This account already has a PIN. Redirecting to login…', 'error');
+                setTimeout(() => {
+                    loginPhoneDisplay.textContent = phone;
+                    patientGreeting.textContent = '';
+                    clearPinBoxes(loginPinBoxes);
+                    clearMsg(msgLogin);
+                    failedAttempts = 0;
+                    loginRetryInfo.style.display = 'none';
+                    showStep(stepLogin);
+                    loginPinBoxes[0].focus();
+                }, 1200);
+
+            } else if (res.status === 429) {
+                showMsg(msgSetPin, data.message || 'Too many attempts. Wait 1 minute.', 'error');
+            } else {
+                showMsg(msgSetPin, data.message || data.error || 'Could not save PIN. Please try again.', 'error');
+            }
+        } catch (err) {
+            showMsg(msgSetPin, 'Network error. Please check your connection.');
+        } finally {
+            if (!msgSetPin.classList.contains('message--success')) {
+                btnSetPin.textContent = 'Save PIN & Continue';
+                checkSetPinReady();
+            }
+        }
+    });
+    </script>
+</body>
+
+</html>

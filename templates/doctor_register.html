@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Registration - CareQueue</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style_login.css') }}">
+    <style>
+        .page-wrapper {
+            /* Let the right panel scroll if the form is long */
+            align-items: flex-start;
+        }
+        .form-panel {
+            padding: 40px 20px;
+        }
+        .brand-panel {
+            background: linear-gradient(145deg, hsl(140, 60%, 45%), hsl(140, 70%, 35%), hsl(140, 80%, 25%));
+            position: sticky;
+            top: 0;
+            height: 100vh;
+        }
+        .btn--primary {
+            background: linear-gradient(135deg, hsl(140, 60%, 45%), hsl(140, 70%, 35%));
+            box-shadow: 0 4px 14px hsl(140, 60%, 45%, 0.35);
+        }
+        .btn--primary:hover:not(:disabled) {
+            background: linear-gradient(135deg, hsl(140, 60%, 40%), hsl(140, 70%, 30%));
+            box-shadow: 0 6px 18px hsl(140, 60%, 45%, 0.45);
+        }
+        .input-icon svg { stroke: #94a3b8; }
+        .input-wrap input:focus, .input-wrap select:focus { border-color: hsl(140, 60%, 45%); box-shadow: 0 0 0 3px hsl(140, 60%, 45%, 0.15); }
+
+        /* Support select boxes and time inputs seamlessly */
+        .input-wrap select, .input-wrap input[type="time"] {
+            width: 100%;
+            padding: 13px 14px 13px 42px;
+            font-family: var(--font);
+            font-size: 0.95rem;
+            color: var(--text-h);
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-md);
+            outline: none;
+            transition: border-color var(--transition), box-shadow var(--transition);
+            appearance: none;
+            -moz-appearance: none;
+            -webkit-appearance: none;
+        }
+        .form-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page-wrapper">
+        <!-- Left decorative panel -->
+        <div class="brand-panel" aria-hidden="true">
+            <div class="brand-panel__inner">
+                <div class="brand-logo">
+                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                        <rect width="40" height="40" rx="10" fill="rgba(255,255,255,0.15)"/>
+                        <path d="M20 8v24M8 20h24" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+                    </svg>
+                    <span>CareQueue Doctor</span>
+                </div>
+                <h2 class="brand-tagline">Join our network.<br>Elevate your care.</h2>
+                <ul class="brand-features">
+                    <li>
+                        <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="rgba(255,255,255,0.2)"/><path d="M7 12l3.5 3.5L17 8" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        Easy Onboarding
+                    </li>
+                    <li>
+                        <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="rgba(255,255,255,0.2)"/><path d="M7 12l3.5 3.5L17 8" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        Secure Digital Portal
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Right form panel -->
+        <div class="form-panel">
+            <div class="form-card" style="max-width: 480px;">
+                <!-- Mobile logo -->
+                <div class="mobile-logo" aria-hidden="true" style="color: hsl(140, 60%, 40%);">
+                    <svg width="32" height="32" viewBox="0 0 40 40" fill="none">
+                        <rect width="40" height="40" rx="10" fill="hsl(140, 60%, 45%)"/>
+                        <path d="M20 8v24M8 20h24" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+                    </svg>
+                    <span>CareQueue Doctor</span>
+                </div>
+
+                <div class="step active">
+                    <div class="step-header">
+                        <h1>Create Account</h1>
+                        <p class="step-sub">Fill in your details to open your portal.</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Licence Number</label>
+                        <div class="input-wrap">
+                            <span class="input-icon">
+                                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke-width="2">
+                                    <rect x="3" y="4" width="18" height="16" rx="2" ry="2"></rect>
+                                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                                </svg>
+                            </span>
+                            <input type="text" id="licence" placeholder="e.g. GJ1334" maxlength="6" style="text-transform: uppercase;">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Doctor Name</label>
+                        <div class="input-wrap">
+                            <span class="input-icon">
+                                <svg width="18" height="18" fill="none" viewBox="0 0 24 24">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke-width="1.8" stroke-linecap="round"/>
+                                    <circle cx="12" cy="7" r="4" stroke-width="1.8"/>
+                                </svg>
+                            </span>
+                            <input type="text" id="doctorName" placeholder="Dr. Full Name">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Clinic Name</label>
+                        <div class="input-wrap">
+                            <span class="input-icon">
+                                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                </svg>
+                            </span>
+                            <input type="text" id="clinicName" placeholder="Clinic / Hospital Name">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Clinic Address</label>
+                        <div class="input-wrap">
+                            <span class="input-icon">
+                                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                            </span>
+                            <input type="text" id="clinicAddress" placeholder="City / Area">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Specialization</label>
+                        <div class="input-wrap">
+                            <span class="input-icon">
+                                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                                </svg>
+                            </span>
+                            <select id="specialization">
+                                <option value="">Select Specialization</option>
+                                <option value="Physiotherapy">Physiotherapy</option>
+                                <option value="General Medicine">General Medicine</option>
+                                <option value="Pediatrics">Pediatrics</option>
+                                <option value="Dermatology">Dermatology</option>
+                                <option value="Orthopedics">Orthopedics</option>
+                                <option value="ENT">ENT</option>
+                                <option value="Gynecology">Gynecology</option>
+                                <option value="Cardiology">Cardiology</option>
+                                <option value="Ophthalmology">Ophthalmology</option>
+                                <option value="Dentistry">Dentistry</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>OPD Start</label>
+                            <div class="input-wrap">
+                                <span class="input-icon">
+                                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </span>
+                                <input type="time" id="opdStart" value="09:00">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>OPD End</label>
+                            <div class="input-wrap">
+                                <span class="input-icon">
+                                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </span>
+                                <input type="time" id="opdEnd" value="17:00">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Create 4-Digit PIN</label>
+                        <div class="pin-row" id="registerPinRow">
+                            <input type="password" class="pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                            <input type="password" class="pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                            <input type="password" class="pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                            <input type="password" class="pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                        </div>
+                        <p class="field-hint">Used for your login. Must be exactly 4 numbers.</p>
+                    </div>
+
+                    <div id="msgRegister" class="message" role="alert" aria-live="polite"></div>
+
+                    <button id="registerBtn" class="btn btn--primary" disabled>
+                        Register Account
+                        <svg class="btn-arrow" width="16" height="16" fill="none" viewBox="0 0 24 24">
+                            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+
+                    <div style="text-align:center; font-size: 0.85rem; margin-top:20px; color: var(--text-muted);">
+                        Already registered? <a href="/doctor_login" style="color:hsl(140, 60%, 45%); font-weight:600; text-decoration:none;">Login here</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const btnRegister = document.getElementById("registerBtn");
+        const msgRegister = document.getElementById("msgRegister");
+        const registerPinBoxes = Array.from(document.querySelectorAll('#registerPinRow .pin-box'));
+
+        function showMsg(text, type = 'error') {
+            msgRegister.textContent = text;
+            msgRegister.className = `message message--${type}`;
+        }
+        function clearMsg() {
+            msgRegister.textContent = '';
+            msgRegister.className = 'message';
+        }
+
+        function getPinValue(boxes) { return boxes.map(b => b.value).join(''); }
+        function isPinComplete(boxes) { return boxes.every(b => /^\d$/.test(b.value)); }
+
+        function checkRegisterReady() {
+            const licence = document.getElementById('licence').value.trim();
+            const name = document.getElementById('doctorName').value.trim();
+            const pinComplete = isPinComplete(registerPinBoxes);
+            btnRegister.disabled = !(licence.length >= 6 && name.length > 2 && pinComplete);
+        }
+
+        document.getElementById('licence').addEventListener('input', checkRegisterReady);
+        document.getElementById('doctorName').addEventListener('input', checkRegisterReady);
+
+        // Wire PIN boxes
+        registerPinBoxes.forEach((box, i) => {
+            box.addEventListener('input', () => {
+                box.value = box.value.replace(/\D/g, '').slice(-1);
+                if (box.value && i < registerPinBoxes.length - 1) registerPinBoxes[i + 1].focus();
+                checkRegisterReady();
+            });
+            box.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !box.value && i > 0) {
+                    registerPinBoxes[i - 1].focus();
+                    registerPinBoxes[i - 1].value = '';
+                }
+            });
+            box.addEventListener('paste', (e) => {
+                e.preventDefault();
+                const digits = (e.clipboardData.getData('text') || '').replace(/\D/g, '').slice(0, 4);
+                digits.split('').forEach((ch, idx) => {
+                    if (registerPinBoxes[i + idx]) registerPinBoxes[i + idx].value = ch;
+                });
+                const nextEmpty = registerPinBoxes.indexOf(registerPinBoxes.find(b => !b.value));
+                if (nextEmpty >= 0) registerPinBoxes[nextEmpty].focus();
+                else registerPinBoxes[registerPinBoxes.length - 1].focus();
+                checkRegisterReady();
+            });
+        });
+
+        window.addEventListener('DOMContentLoaded', function () {
+            const params = new URLSearchParams(window.location.search);
+            const licence = params.get('licence');
+            if (licence) {
+                document.getElementById('licence').value = licence;
+                checkRegisterReady();
+            }
+        });
+
+        btnRegister.addEventListener('click', () => registerDoctor());
+
+        function registerDoctor() {
+            const licence = document.getElementById('licence').value.trim().toUpperCase();
+            const name = document.getElementById('doctorName').value.trim();
+            const clinicName = document.getElementById('clinicName').value.trim();
+            const clinicAddress = document.getElementById('clinicAddress').value.trim();
+            const specialization = document.getElementById('specialization').value;
+            const opdStart = document.getElementById('opdStart').value;
+            const opdEnd = document.getElementById('opdEnd').value;
+            const pin = getPinValue(registerPinBoxes);
+
+            clearMsg();
+
+            const pattern = /^[A-Z]{2}[0-9]{4}$/;
+            if (!pattern.test(licence)) { showMsg("Invalid Licence Format. Use format: GJ1234"); return; }
+            if (!name) { showMsg("Please enter doctor name"); return; }
+            if (!clinicName) { showMsg("Please enter clinic name"); return; }
+            if (!clinicAddress) { showMsg("Please enter clinic address"); return; }
+            if (!specialization) { showMsg("Please select specialization"); return; }
+            if (!opdStart || !opdEnd) { showMsg("Please set OPD timings"); return; }
+            if (opdStart >= opdEnd) { showMsg("OPD end time must be after start time"); return; }
+            if (!isPinComplete(registerPinBoxes)) { showMsg("Please enter a 4-digit PIN"); return; }
+
+            btnRegister.disabled = true;
+            btnRegister.innerHTML = "Creating Account...";
+
+            fetch('/api/doctor/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    licence_number: licence,
+                    name: name,
+                    clinic_name: clinicName,
+                    clinic_address: clinicAddress,
+                    specialization: specialization,
+                    opd_start: opdStart,
+                    opd_end: opdEnd,
+                    pin: pin
+                })
+            })
+            .then(res => res.json().then(data => ({ status: res.status, data })))
+            .then(({ status, data }) => {
+                if (status === 201) {
+                    localStorage.setItem("doctorId", data.doctor.id);
+                    localStorage.setItem("doctorApiKey", data.api_key);
+                    localStorage.setItem("loggedDoctor", licence);
+                    showMsg("Registration successful! Redirecting...", "success");
+                    setTimeout(() => { window.location.href = "/doctor_dashboard"; }, 1000);
+                } else if (status === 409) {
+                    showMsg("A doctor with this licence already exists.");
+                } else {
+                    showMsg(data.error || "Registration failed");
+                }
+            })
+            .catch(err => {
+                console.error("Registration error:", err);
+                showMsg("Could not connect to server. Ensure it is running.");
+            })
+            .finally(() => {
+                if (!msgRegister.classList.contains('message--success')) {
+                    checkRegisterReady();
+                    btnRegister.innerHTML = 'Register Account <svg class="btn-arrow" width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

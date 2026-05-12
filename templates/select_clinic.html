@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Select Clinic - CareQueue</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/select_clinic.css') }}">
+</head>
+
+<body>
+  <div class="abc">
+    <div class="header">
+      <h2>Select Clinic</h2>
+      <p>Choose a clinic to join the queue</p>
+    </div>
+    <div class="container" id="clinicsContainer">
+      <!-- Clinics will be loaded here dynamically by JS -->
+      <p>Loading clinics...</p>
+    </div>
+  </div>
+
+  <!-- Popup for closed clinics -->
+  <div class="popup-overlay" id="popup">
+    <div class="popup-box">
+      <h3>Clinic Closed</h3>
+      <p>This clinic is currently closed or on break. Please try again later.</p>
+      <button class="popup-btn" onclick="closePopup()">Okay</button>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", async function () {
+      const container = document.getElementById("clinicsContainer");
+      const popup = document.getElementById("popup");
+
+      try {
+        const response = await fetch('/api/clinics');
+        const data = await response.json();
+        const clinics = data.clinics;
+
+        container.innerHTML = "";
+
+        clinics.forEach(clinic => {
+
+          const doctor = clinic.doctors[0];
+
+          // 🔹 Get real status from backend
+          const status = doctor.status; // Open / Break / Closed
+          
+          let displayStatus = status;
+          if (status === "Open") {
+            const now = new Date();
+            const currentMinutes = now.getHours() * 60 + now.getMinutes();
+            const [h, m] = doctor.opd_start_time.split(':').map(Number);
+            const opdStartMinutes = h * 60 + m;
+            
+            if (currentMinutes < opdStartMinutes) {
+              displayStatus = "Open (Early)";
+            }
+          }
+
+          let statusClass = "status";
+          if (status === "Closed") {
+            statusClass += " closed";
+          }
+          if (status === "Break") {
+            statusClass += " break";
+          }
+
+          const card = document.createElement("div");
+          card.className = "card";
+
+          card.innerHTML = `
+        <div class="card-top">
+          <div class="clinic-name">${clinic.name}</div>
+          <div class="${statusClass}">${displayStatus}</div>
+        </div>
+
+        <div class="doctor">${doctor.name}</div>
+        <div class="info">🕘 ${doctor.opd_start_time} - ${doctor.opd_end_time}</div>
+        <div class="info">📍 ${clinic.location}</div>
+
+        <div class="tokens">
+          <div>Current Token <span>${doctor.current_token}</span></div>
+          <div>Waiting <span>${doctor.waiting_count}</span></div>
+        </div>
+
+        <button class="btn clinic-btn"
+                data-id="${clinic.id}"
+                data-status="${status}">
+          View Details →
+        </button>
+      `;
+
+          container.appendChild(card);
+        });
+
+        document.querySelectorAll(".clinic-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+
+            const id = btn.dataset.id;
+            const status = btn.dataset.status;
+
+            if (status !== "Open") {
+              popup.style.display = "flex";
+              return;
+            }
+
+            window.location.href = "/clinic_details?id=" + id;
+          });
+        });
+
+      } catch (error) {
+        console.error("Error loading clinics:", error);
+        container.innerHTML =
+          "<p>Error loading clinics. Please make sure the backend server is running.</p>";
+      }
+    });
+
+    function closePopup() {
+      document.getElementById("popup").style.display = "none";
+    }
+  </script>
+</body>
+
+</html>

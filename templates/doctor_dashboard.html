@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Dashboard - CareQueue</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/doctor_dashboard.css') }}">
+</head>
+
+<body>
+
+    <div class="header">
+        <h2 id="clinicName"></h2>
+        <p id="statusText"></p>
+    </div>
+
+    <div class="card">
+
+        <div class="info-block">
+            <p>Doctor</p>
+            <h3 id="doctorName"></h3>
+        </div>
+
+        <div class="info-block">
+            <p>OPD Timing</p>
+            <h4 id="opdTiming"></h4>
+        </div>
+
+        <div class="info-row">
+            <div>
+                <p>Current Token</p>
+                <h1 id="currentToken">0</h1>
+            </div>
+
+            <div>
+                <p>Patients Waiting</p>
+                <h1 id="waitingCount">0</h1>
+            </div>
+        </div>
+
+        <div class="info-block avg-time">
+            <p>Avg. Consultation Time</p>
+            <h4 id="avgTime">~5 min</h4>
+        </div>
+
+        <button class="btn-primary" onclick="markDone()">✓ Mark as Done</button>
+        <button class="btn-open" id="openBtn" onclick="openOPD()">Open OPD</button>
+        <button class="btn-pause" onclick="pauseOPD()">⏸ Pause</button>
+        <button class="btn-resume" onclick="resumeOPD()">▶ Resume</button>
+        <button class="btn-close" onclick="closeClinic()">✕ Close Clinic</button>
+        <button class="btn-reset" onclick="resetQueue()">↻ Reset Queue</button>
+        <hr style="margin: 12px 0; border: none; border-top: 1px solid #eee;">
+        <button class="btn-delete" onclick="deleteClinic()">🗑 Delete Clinic</button>
+
+    </div>
+
+    <!-- Waiting List -->
+    <div class="card waiting-card">
+        <h3>Waiting List</h3>
+        <div id="waitingList">
+            <p class="empty-msg">No patients waiting</p>
+        </div>
+    </div>
+
+    <script>
+        const doctorId = localStorage.getItem("doctorId");
+
+        if (!doctorId) {
+            window.location.href = "/doctor_login";
+        }
+
+        // ── Fetch dashboard data ──────────────────────────────────────────────
+        async function loadDashboard() {
+            try {
+                const res = await fetch(`/api/doctor/dashboard/${doctorId}`);
+                if (!res.ok) throw new Error('Failed to load dashboard');
+                const data = await res.json();
+
+                // Update header
+                document.getElementById("clinicName").innerText = data.clinic.name;
+                document.getElementById("statusText").innerText = "Status: " + data.status;
+
+                // Update info
+                document.getElementById("doctorName").innerText = data.doctor.name;
+                document.getElementById("opdTiming").innerText =
+                    data.opd_start_time + " - " + data.opd_end_time;
+                document.getElementById("currentToken").innerText =
+                    data.current_token_number || 0;
+                document.getElementById("waitingCount").innerText =
+                    data.waiting_count || 0;
+                document.getElementById("avgTime").innerText =
+                    "~" + data.average_consultation_time + " min";
+
+                // Update status styling
+                const header = document.querySelector('.header');
+                header.className = 'header';
+                if (data.status === 'Open') header.classList.add('status-open');
+                else if (data.status === 'Break') header.classList.add('status-break');
+                else header.classList.add('status-closed');
+
+                // Update waiting list (token numbers only, no patient names)
+                const listEl = document.getElementById("waitingList");
+                if (data.waiting_tokens && data.waiting_tokens.length > 0) {
+                    listEl.innerHTML = data.waiting_tokens.map(num =>
+                        `<div class="token-item">Token #${num}</div>`
+                    ).join('');
+                } else {
+                    listEl.innerHTML = '<p class="empty-msg">No patients waiting</p>';
+                }
+
+            } catch (err) {
+                console.error("Dashboard load error:", err);
+            }
+        }
+
+        // ── Doctor Actions ────────────────────────────────────────────────────
+
+        async function markDone() {
+            try {
+                const res = await fetch('/api/doctor/mark_done', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ doctor_id: parseInt(doctorId) })
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    alert(data.error || data.message || "Cannot mark done");
+                    return;
+                }
+
+                loadDashboard();
+            } catch (err) {
+                console.error("Mark done error:", err);
+                alert("Could not connect to server");
+            }
+        }
+
+        async function openOPD() {
+            await updateStatus("Open");
+        }
+
+        async function pauseOPD() {
+            await updateStatus("Break");
+        }
+
+        async function resumeOPD() {
+            await updateStatus("Open");
+        }
+
+        async function closeClinic() {
+            await updateStatus("Closed");
+        }
+
+        async function updateStatus(status) {
+            try {
+                const res = await fetch('/api/doctor/update_status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        doctor_id: parseInt(doctorId),
+                        status: status
+                    })
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    alert(data.message || data.error || "Cannot update status");
+                    return;
+                }
+
+                loadDashboard();
+            } catch (err) {
+                console.error("Status update error:", err);
+                alert("Could not connect to server");
+            }
+        }
+
+        async function resetQueue() {
+            if (!confirm("Are you sure you want to reset the queue?")) return;
+
+            try {
+                const res = await fetch('/api/doctor/reset_queue', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ doctor_id: parseInt(doctorId) })
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    alert(data.message || data.error || "Cannot reset queue");
+                    return;
+                }
+
+                alert("Queue reset successfully");
+                loadDashboard();
+            } catch (err) {
+                console.error("Reset error:", err);
+                alert("Could not connect to server");
+            }
+        }
+
+        async function deleteClinic() {
+            if (!confirm("Are you sure you want to DELETE your clinic? This will remove your clinic from the system and cancel all waiting patients. This action cannot be undone.")) return;
+
+            try {
+                const res = await fetch('/api/doctor/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ doctor_id: parseInt(doctorId) })
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    alert(data.message || data.error || "Cannot delete clinic");
+                    return;
+                }
+
+                // Clear local storage and redirect
+                localStorage.removeItem("doctorId");
+                localStorage.removeItem("doctorApiKey");
+                localStorage.removeItem("loggedDoctor");
+                alert("Clinic deleted successfully.");
+                window.location.href = "/";
+            } catch (err) {
+                console.error("Delete error:", err);
+                alert("Could not connect to server");
+            }
+        }
+
+        // ── Init & Auto-refresh ───────────────────────────────────────────────
+        loadDashboard();
+        setInterval(loadDashboard, 10000); // Refresh every 10 seconds
+    </script>
+
+</body>
+
+</html>

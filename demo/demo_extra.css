@@ -1,0 +1,31 @@
+/* ═══ CareQueue Demo v4 — Additional styles for specializations, maps, navigation ═══ */
+
+/* Specialization tag */
+.ccl-spec{font-size:11px;color:#7c3aed;font-weight:500;margin:1px 0 3px}
+.ccl-loc{font-size:11px;color:var(--card-muted);margin:2px 0 6px}
+.ccl-loc::before{content:'📍 '}
+
+/* Navigate + View Details button row */
+.ccl-btn-row{display:flex;gap:6px;margin-top:6px}
+.ccl-btn-row .ui-btn{flex:1;margin:0;font-size:11px;padding:8px 4px;text-align:center;border-radius:8px}
+.ccl-btn-row .nav-btn{background:#f0fdf4;color:#059669;border:1px solid #bbf7d0;font-weight:600}
+.ccl-btn-row .nav-btn::before{content:'📍 '}
+
+/* Map preview overlay */
+.map-preview{position:absolute;inset:0;border-radius:20px;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:10;flex-direction:column;padding:16px}
+.map-preview.show{display:flex}
+.map-card{background:#fff;border-radius:12px;width:90%;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.2)}
+.map-header{background:#34a853;color:#fff;padding:10px 14px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px}
+.map-body{padding:14px}
+.map-route{background:#f0f9ff;border-radius:8px;padding:10px;margin-bottom:8px;font-size:11px;color:#1e293b;line-height:1.5}
+.map-route strong{color:#059669}
+.map-eta{font-size:12px;color:#1e40af;font-weight:600;text-align:center;margin-top:6px}
+.map-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#e8f5e9;border-radius:8px;padding:8px;margin-top:8px}
+.map-grid div{text-align:center;font-size:10px;color:#475569}
+.map-grid span{display:block;font-size:13px;font-weight:700;color:#1e293b}
+
+/* Doctor panel specialization */
+.doc-spec{font-size:.75rem;color:#a78bfa;margin-top:2px}
+
+/* Scene 4 clinic details — wider phone for nav scene */
+.phone.wide{width:290px}

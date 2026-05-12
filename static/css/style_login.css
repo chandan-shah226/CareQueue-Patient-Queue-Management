@@ -1,0 +1,427 @@
+/* ============================================================
+   CareQueue — Patient Login  |  style_login.css
+   Premium, responsive, fully accessible auth UI.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ── Reset & Tokens ──────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --brand-from:   hsl(222, 89%, 55%);
+    --brand-to:     hsl(255, 80%, 60%);
+    --brand-mid:    hsl(238, 84%, 58%);
+    --accent:       hsl(222, 89%, 60%);
+    --accent-light: hsl(222, 100%, 96%);
+
+    --surface:      #ffffff;
+    --surface-1:    hsl(220, 20%, 97%);
+    --border:       hsl(220, 15%, 88%);
+    --border-focus: hsl(222, 89%, 60%);
+
+    --text-h:       hsl(222, 30%, 14%);
+    --text-body:    hsl(220, 15%, 38%);
+    --text-muted:   hsl(220, 12%, 55%);
+    --text-hint:    hsl(220, 10%, 68%);
+
+    --success-bg:   hsl(140, 72%, 94%);
+    --success-text: hsl(140, 60%, 25%);
+    --error-bg:     hsl(0, 85%, 95%);
+    --error-text:   hsl(0, 68%, 35%);
+
+    --shadow-sm:  0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+    --shadow-md:  0 4px 16px rgba(30,40,90,.10), 0 1px 4px rgba(0,0,0,.05);
+    --shadow-lg:  0 16px 48px rgba(30,40,90,.14), 0 4px 12px rgba(0,0,0,.06);
+    --radius-sm:  10px;
+    --radius-md:  16px;
+    --radius-lg:  24px;
+
+    --font: 'Inter', system-ui, -apple-system, sans-serif;
+    --transition: 0.22s cubic-bezier(0.4,0,0.2,1);
+}
+
+html { font-size: 16px; -webkit-font-smoothing: antialiased; }
+
+body {
+    font-family: var(--font);
+    background: var(--surface-1);
+    color: var(--text-body);
+    min-height: 100vh;
+}
+
+/* ── Page wrapper: side-by-side on desktop ───────────────────── */
+.page-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* ── Brand / Left panel ──────────────────────────────────────── */
+.brand-panel {
+    display: none;              /* hidden on mobile */
+    position: relative;
+    width: 42%;
+    min-width: 320px;
+    background: linear-gradient(145deg, var(--brand-from), var(--brand-mid), var(--brand-to));
+    overflow: hidden;
+}
+
+/* Decorative blobs */
+.brand-panel::before,
+.brand-panel::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.18;
+    background: white;
+}
+.brand-panel::before { width: 320px; height: 320px; top: -80px; right: -80px; }
+.brand-panel::after  { width: 240px; height: 240px; bottom: -60px; left: -60px; }
+
+.brand-panel__inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
+    padding: 56px 48px;
+    color: white;
+}
+
+.brand-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 48px;
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.brand-tagline {
+    font-size: clamp(1.75rem, 3vw, 2.4rem);
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.03em;
+    margin-bottom: 36px;
+}
+
+.brand-features {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.brand-features li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    opacity: 0.92;
+}
+
+/* ── Form panel / Right side ─────────────────────────────────── */
+.form-panel {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 20px;
+    min-height: 100vh;
+}
+
+.form-card {
+    width: 100%;
+    max-width: 420px;
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 40px 36px 32px;
+    position: relative;
+}
+
+/* ── Mobile logo (shows only on small screens) ───────────────── */
+.mobile-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-h);
+    margin-bottom: 28px;
+    letter-spacing: -0.02em;
+}
+
+/* ── Steps ───────────────────────────────────────────────────── */
+.step {
+    display: none;
+    animation: fadeSlideIn 0.28s ease both;
+}
+.step.active { display: block; }
+
+@keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Back button ─────────────────────────────────────────────── */
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    font-family: var(--font);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: 20px;
+    transition: color var(--transition);
+}
+.btn-back:hover { color: var(--accent); }
+
+/* ── Step header ─────────────────────────────────────────────── */
+.step-header { margin-bottom: 24px; }
+
+.step-header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-h);
+    letter-spacing: -0.03em;
+    margin-bottom: 6px;
+}
+
+.step-sub {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+/* ── Phone badge ─────────────────────────────────────────────── */
+.phone-badge-wrap { margin-bottom: 20px; }
+
+.phone-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--accent-light);
+    color: var(--accent);
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.02em;
+}
+
+/* ── Form groups ─────────────────────────────────────────────── */
+.form-group { margin-bottom: 20px; }
+
+.form-group label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-h);
+    margin-bottom: 8px;
+}
+
+/* ── Input wrap ──────────────────────────────────────────────── */
+.input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-wrap input {
+    width: 100%;
+    padding: 13px 14px 13px 42px;
+    font-family: var(--font);
+    font-size: 0.95rem;
+    color: var(--text-h);
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-md);
+    outline: none;
+    transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.input-wrap input::placeholder { color: var(--text-hint); }
+.input-wrap input:focus {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px hsl(222,89%,60%,0.15);
+}
+
+.input-icon {
+    position: absolute;
+    left: 13px;
+    display: flex;
+    align-items: center;
+    pointer-events: none;
+}
+
+.field-hint {
+    font-size: 0.78rem;
+    color: var(--text-hint);
+    margin-top: 6px;
+}
+
+/* ── PIN boxes ───────────────────────────────────────────────── */
+.pin-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 4px;
+}
+
+.pin-box {
+    width: 58px;
+    height: 58px;
+    text-align: center;
+    font-family: var(--font);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-h);
+    background: var(--surface-1);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-md);
+    outline: none;
+    transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+    /* Show • when focused & filled thanks to type="password" */
+    letter-spacing: 0;
+    -webkit-text-security: disc;
+}
+
+.pin-box:focus {
+    border-color: var(--border-focus);
+    background: var(--surface);
+    box-shadow: 0 0 0 3px hsl(222,89%,60%,0.15);
+}
+
+.pin-box:not(:placeholder-shown) {
+    border-color: var(--accent);
+}
+
+/* ── Primary button ──────────────────────────────────────────── */
+.btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 14px 20px;
+    font-family: var(--font);
+    font-size: 0.97rem;
+    font-weight: 600;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: background var(--transition), transform var(--transition), box-shadow var(--transition), opacity var(--transition);
+    margin-top: 4px;
+    margin-bottom: 16px;
+    letter-spacing: -0.01em;
+}
+
+.btn--primary {
+    background: linear-gradient(135deg, var(--brand-from), var(--brand-mid));
+    color: white;
+    box-shadow: 0 4px 14px hsl(222,89%,55%,0.35);
+}
+
+.btn--primary:hover:not(:disabled) {
+    background: linear-gradient(135deg, hsl(222,89%,50%), hsl(238,84%,53%));
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px hsl(222,89%,55%,0.45);
+}
+
+.btn--primary:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.btn-arrow { flex-shrink: 0; }
+
+/* ── Messages ────────────────────────────────────────────────── */
+.message {
+    font-size: 0.875rem;
+    font-weight: 500;
+    min-height: 22px;
+    border-radius: var(--radius-sm);
+    text-align: center;
+    padding: 0 4px;
+    transition: all 0.2s;
+}
+
+.message--error {
+    color: var(--error-text);
+    background: var(--error-bg);
+    padding: 10px 14px;
+    border: 1px solid hsl(0,68%,82%);
+}
+
+.message--success {
+    color: var(--success-text);
+    background: var(--success-bg);
+    padding: 10px 14px;
+    border: 1px solid hsl(140,60%,75%);
+}
+
+/* ── Info banner (Set PIN step context message) ──────────────── */
+.info-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    background: hsl(222, 100%, 96%);
+    border: 1px solid hsl(222, 80%, 84%);
+    color: hsl(222, 60%, 38%);
+    border-radius: var(--radius-sm);
+    padding: 11px 14px;
+    font-size: 0.83rem;
+    font-weight: 500;
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
+.info-banner svg { flex-shrink: 0; margin-top: 1px; stroke: hsl(222,60%,50%); }
+
+/* ── Retry info ──────────────────────────────────────────────── */
+.retry-info {
+    font-size: 0.82rem;
+    color: var(--error-text);
+    text-align: center;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+/* ── Card footer ─────────────────────────────────────────────── */
+.card-footer {
+    margin-top: 20px;
+    font-size: 0.75rem;
+    color: var(--text-hint);
+    text-align: center;
+}
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (min-width: 760px) {
+    .brand-panel { display: flex; }
+    .mobile-logo { display: none; }
+
+    .form-card {
+        border-radius: var(--radius-lg);
+        padding: 48px 44px 36px;
+    }
+}
+
+@media (max-width: 380px) {
+    .form-card { padding: 28px 20px 24px; }
+    .pin-box { width: 52px; height: 52px; font-size: 1.2rem; }
+    .pin-row { gap: 8px; }
+}
