@@ -15,6 +15,10 @@ The app will start on
 from flask import Flask, render_template, send_from_directory
 from flask_cors import CORS
 import os
+import threading
+import time
+import uuid
+import requests
 
 
 # Import configuration
@@ -124,9 +128,106 @@ def create_app(config_name='development'):
     return app
 
 
+def auto_seed(app):
+    """
+    Seed the database with demo data if it is empty.
+    Runs once at startup — safe to call multiple times.
+    """
+    from models import Clinic, Doctor, Patient, Token
+    from datetime import datetime
+
+    with app.app_context():
+        from database import db
+        if Clinic.query.count() > 0:
+            print("[seed] Data already exists — skipping auto-seed.")
+            return
+
+        print("[seed] Empty database detected — seeding demo data...")
+
+        # Clinic 1
+        c1 = Clinic(name="Arogya Wellness Clinic", location="Satellite Road, Ahmedabad")
+        db.session.add(c1); db.session.flush()
+        d1 = Doctor(name="Dr. Arjun Mehta", specialization="Homeopathy Doctor",
+                    licence_number="GJ1001", clinic_id=c1.id,
+                    opd_start_time="09:00", opd_end_time="13:00",
+                    status="Open", current_token_number=0, api_key=str(uuid.uuid4()))
+        d1.set_password("1234"); db.session.add(d1)
+
+        # Clinic 2
+        c2 = Clinic(name="CurePlus Child Care", location="Navrangpura, Ahmedabad")
+        db.session.add(c2); db.session.flush()
+        d2 = Doctor(name="Dr. Priya Sharma", specialization="Pediatrician",
+                    licence_number="GJ1002", clinic_id=c2.id,
+                    opd_start_time="10:00", opd_end_time="14:00",
+                    status="Open", current_token_number=0, api_key=str(uuid.uuid4()))
+        d2.set_password("1234"); db.session.add(d2)
+
+        # Clinic 3
+        c3 = Clinic(name="HeartBeat Cardiac Centre", location="SG Highway, Ahmedabad")
+        db.session.add(c3); db.session.flush()
+        d3 = Doctor(name="Dr. Rahul Verma", specialization="Cardiologist",
+                    licence_number="GJ1003", clinic_id=c3.id,
+                    opd_start_time="14:00", opd_end_time="18:00",
+                    status="Closed", current_token_number=0, api_key=str(uuid.uuid4()))
+        d3.set_password("1234"); db.session.add(d3)
+        db.session.flush()
+
+        # Patients + tokens for open clinics only
+        patients = [
+            ("Ravi Kumar",  "9876501001", d1),
+            ("Sneha Patel", "9876501002", d1),
+            ("Amit Joshi",  "9876501003", d1),
+            ("Meera Desai", "9876501004", d1),
+            ("Kiran Shah",  "9876502001", d2),
+            ("Pooja Mehta", "9876502002", d2),
+            ("Rohan Gupta", "9876502003", d2),
+        ]
+        token_num = {}
+        for name, phone, doc in patients:
+            p = Patient(name=name, phone_number=phone)
+            p.set_password("1234"); db.session.add(p); db.session.flush()
+            token_num[doc.id] = token_num.get(doc.id, 0) + 1
+            db.session.add(Token(patient_id=p.id, doctor_id=doc.id,
+                                 token_number=token_num[doc.id],
+                                 status='waiting', created_at=datetime.now()))
+
+        db.session.commit()
+        print("[seed] Demo data seeded successfully.")
+
+
+def start_keep_alive(app):
+    """
+    Background thread that pings the /health endpoint every 14 minutes
+    so Render free tier never spins down the service.
+    """
+    def ping():
+        # Wait for server to fully start
+        time.sleep(30)
+        base_url = os.environ.get('RENDER_EXTERNAL_URL', 'http://localhost:5000')
+        url = f"{base_url}/health"
+        while True:
+            try:
+                r = requests.get(url, timeout=10)
+                print(f"[keep-alive] Pinged {url} — {r.status_code}")
+            except Exception as e:
+                print(f"[keep-alive] Ping failed: {e}")
+            time.sleep(14 * 60)   # every 14 minutes
+
+    t = threading.Thread(target=ping, daemon=True)
+    t.start()
+
+
 if __name__ == '__main__':
     # Create the app
-    app = create_app('development')
+    config_name = os.environ.get('FLASK_ENV', 'development')
+    app = create_app(config_name)
+
+    # Auto-seed demo data if database is empty
+    auto_seed(app)
+
+    # Keep-alive ping (prevents Render free tier from sleeping)
+    start_keep_alive(app)
+
     
     print("\n" + "="*60)
     print("🏥 CareQueue Backend Server Starting...")
