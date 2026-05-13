@@ -6,6 +6,33 @@
   <title>Select Clinic - CareQueue</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/select_clinic.css') }}">
+  <style>
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .btn-row .btn {
+      flex: 1;
+      margin-top: 0;
+    }
+    .nav-btn {
+      background: #ffffff;
+      color: #2563eb;
+      border: 2px solid #2563eb;
+      font-weight: 600;
+    }
+    .nav-btn:hover {
+      background: #2563eb;
+      color: #ffffff;
+    }
+    .doctor-spec {
+      font-size: 13px;
+      color: #7c3aed;
+      font-weight: 500;
+      margin: 2px 0 4px 0;
+    }
+  </style>
 </head>
 
 <body>
@@ -45,7 +72,7 @@
 
           const doctor = clinic.doctors[0];
 
-          // 🔹 Get real status from backend
+          // Get real status from backend
           const status = doctor.status; // Open / Break / Closed
           
           let displayStatus = status;
@@ -61,44 +88,50 @@
           }
 
           let statusClass = "status";
-          if (status === "Closed") {
-            statusClass += " closed";
-          }
-          if (status === "Break") {
-            statusClass += " break";
-          }
+          if (status === "Closed") statusClass += " closed";
+          if (status === "Break") statusClass += " break";
+
+          // Build Google Maps URL — use saved link if available, else search by address
+          const mapsUrl = clinic.maps_link
+            ? clinic.maps_link
+            : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(clinic.location)}`;
 
           const card = document.createElement("div");
           card.className = "card";
 
           card.innerHTML = `
-        <div class="card-top">
-          <div class="clinic-name">${clinic.name}</div>
-          <div class="${statusClass}">${displayStatus}</div>
-        </div>
+            <div class="card-top">
+              <div class="clinic-name">🏥 ${clinic.name}</div>
+              <div class="${statusClass}">${displayStatus}</div>
+            </div>
 
-        <div class="doctor">${doctor.name}</div>
-        <div class="info">🕘 ${doctor.opd_start_time} - ${doctor.opd_end_time}</div>
-        <div class="info">📍 ${clinic.location}</div>
+            <div class="doctor">🩺 ${doctor.name}</div>
+            <div class="doctor-spec">${doctor.specialization || ''}</div>
+            <div class="info">🕒 ${doctor.opd_start_time} - ${doctor.opd_end_time}</div>
+            <div class="info">📍 ${clinic.location}</div>
 
-        <div class="tokens">
-          <div>Current Token <span>${doctor.current_token}</span></div>
-          <div>Waiting <span>${doctor.waiting_count}</span></div>
-        </div>
+            <div class="tokens">
+              <div>🎟 Current Token <span>${doctor.current_token}</span></div>
+              <div>⏳ Waiting <span>${doctor.waiting_count}</span></div>
+            </div>
 
-        <button class="btn clinic-btn"
-                data-id="${clinic.id}"
-                data-status="${status}">
-          View Details →
-        </button>
-      `;
+            <div class="btn-row">
+              <button class="btn nav-btn" onclick="window.open('${mapsUrl}', '_blank')">
+                🧭 Navigate
+              </button>
+              <button class="btn clinic-btn"
+                      data-id="${clinic.id}"
+                      data-status="${status}">
+                View Details →
+              </button>
+            </div>
+          `;
 
           container.appendChild(card);
         });
 
         document.querySelectorAll(".clinic-btn").forEach(btn => {
           btn.addEventListener("click", () => {
-
             const id = btn.dataset.id;
             const status = btn.dataset.status;
 
@@ -124,4 +157,4 @@
   </script>
 </body>
 
-</html>
+</html>

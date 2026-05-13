@@ -6,8 +6,9 @@ Endpoints:
 - GET /api/clinic/<clinic_id> - Get specific clinic details
 """
 
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from models import Clinic, Doctor
+from database import db
 
 # Create blueprint
 clinic_bp = Blueprint('clinic', __name__, url_prefix='/api')
@@ -64,3 +65,41 @@ def get_clinic_details(clinic_id):
     ]
     
     return jsonify(clinic_dict), 200
+
+
+@clinic_bp.route('/clinic/update_location', methods=['POST'])
+def update_clinic_location():
+    """
+    Update a clinic's address text and/or Google Maps link.
+    Requires doctor_id for authentication.
+
+    Body: { doctor_id, location, maps_link }
+    """
+    data = request.get_json()
+    doctor_id  = data.get('doctor_id')
+    location   = data.get('location', '').strip()
+    maps_link  = data.get('maps_link', '').strip()
+
+    if not doctor_id:
+        return jsonify({'error': 'doctor_id is required'}), 400
+
+    doctor = Doctor.query.get(doctor_id)
+    if not doctor:
+        return jsonify({'error': 'Doctor not found'}), 404
+
+    clinic = Clinic.query.get(doctor.clinic_id)
+    if not clinic:
+        return jsonify({'error': 'Clinic not found'}), 404
+
+    if location:
+        clinic.location = location
+    if maps_link:
+        clinic.maps_link = maps_link
+
+    db.session.commit()
+
+    return jsonify({
+        'message': 'Clinic location updated successfully',
+        'location': clinic.location,
+        'maps_link': clinic.maps_link or ''
+    }), 200

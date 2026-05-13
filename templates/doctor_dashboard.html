@@ -63,6 +63,27 @@
         </div>
     </div>
 
+    <!-- Clinic Location Settings -->
+    <div class="card" id="locationCard" style="margin-top:16px">
+        <h3 style="margin-bottom:12px">📍 Clinic Location Settings</h3>
+        <div style="margin-bottom:10px">
+            <label style="font-size:13px;font-weight:600;color:#475569;display:block;margin-bottom:4px">Clinic Address</label>
+            <input id="locInput" type="text" placeholder="e.g. Satellite Road, Ahmedabad"
+                style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;outline:none">
+        </div>
+        <div style="margin-bottom:12px">
+            <label style="font-size:13px;font-weight:600;color:#475569;display:block;margin-bottom:4px">Google Maps Link <span style="font-weight:400;color:#94a3b8">(optional — paste share link)</span></label>
+            <input id="mapsInput" type="url" placeholder="https://maps.google.com/?q=..."
+                style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;box-sizing:border-box;outline:none">
+            <p style="font-size:11px;color:#94a3b8;margin:4px 0 0">Open Google Maps → search your clinic → Share → Copy link</p>
+        </div>
+        <div style="display:flex;gap:10px">
+            <button onclick="saveLocation()" style="flex:1;padding:10px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer">Save Location</button>
+            <button onclick="previewMaps()" id="previewBtn" style="flex:1;padding:10px;background:#f1f5f9;color:#2563eb;border:1.5px solid #2563eb;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer">🧭 Preview</button>
+        </div>
+        <p id="locMsg" style="font-size:13px;margin-top:8px;color:#059669;display:none">✅ Location saved! Patients can now navigate to your clinic.</p>
+    </div>
+
     <script>
         const doctorId = localStorage.getItem("doctorId");
 
@@ -229,8 +250,53 @@
             }
         }
 
+        // ── Location Settings ─────────────────────────────────────────────────
+        async function loadLocation() {
+            try {
+                const res = await fetch(`/api/doctor/dashboard/${doctorId}`);
+                const data = await res.json();
+                if (data.clinic) {
+                    const loc = data.clinic.location || '';
+                    const link = data.clinic.maps_link || '';
+                    document.getElementById('locInput').value = loc;
+                    document.getElementById('mapsInput').value = link;
+                }
+            } catch(e) { console.error('Location load error:', e); }
+        }
+
+        async function saveLocation() {
+            const location  = document.getElementById('locInput').value.trim();
+            const maps_link = document.getElementById('mapsInput').value.trim();
+            const msg       = document.getElementById('locMsg');
+
+            if (!location) { alert('Please enter a clinic address.'); return; }
+
+            try {
+                const res = await fetch('/api/clinic/update_location', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ doctor_id: parseInt(doctorId), location, maps_link })
+                });
+                const data = await res.json();
+                if (!res.ok) { alert(data.error || 'Could not save location'); return; }
+                msg.style.display = 'block';
+                setTimeout(() => msg.style.display = 'none', 4000);
+            } catch(e) {
+                alert('Could not connect to server');
+            }
+        }
+
+        function previewMaps() {
+            const link = document.getElementById('mapsInput').value.trim();
+            const loc  = document.getElementById('locInput').value.trim();
+            const url  = link || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc)}`;
+            if (!loc && !link) { alert('Enter an address or Maps link first.'); return; }
+            window.open(url, '_blank');
+        }
+
         // ── Init & Auto-refresh ───────────────────────────────────────────────
         loadDashboard();
+        loadLocation();
         setInterval(loadDashboard, 10000); // Refresh every 10 seconds
     </script>
 

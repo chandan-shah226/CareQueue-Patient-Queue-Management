@@ -34,7 +34,8 @@ class Clinic(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), nullable=False)
     location = db.Column(db.String(500), nullable=False)
-    
+    maps_link = db.Column(db.String(1000), nullable=True)  # Google Maps share link
+
     # Relationship: One clinic has many doctors
     # cascade='all, delete-orphan' ensures when a clinic is deleted, its doctors are too
     doctors = db.relationship('Doctor', backref='clinic', lazy=True, cascade='all, delete-orphan')
@@ -44,7 +45,8 @@ class Clinic(db.Model):
         return {
             'id': self.id,
             'name': self.name,
-            'location': self.location
+            'location': self.location,
+            'maps_link': self.maps_link or ''
         }
     
     def __repr__(self):
