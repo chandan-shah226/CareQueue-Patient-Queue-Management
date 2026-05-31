@@ -21,3 +21,9 @@ A complete Software Engineering analysis, including Database Design, DFDs, ER Mo
 ---
 
 *This project is built using Python, Flask, SQLite, and standard Web technologies.*
+
+## Author
+**Chandan Shah**  
+📧 cshah226@outlook.com  
+🔗 [LinkedIn](https://linkedin.com/in/chandan-shah-73a87833b)  
+💻 [GitHub](https://github.com/chandan-shah226)
